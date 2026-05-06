@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title id="uiPageTitle">Focus System Master</title>
 
-  <!-- FIREBASE CORE SDKS -->
+  <!-- FIREBASE CORE SDKS (Version 9 Compat für maximale Stabilität) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -34,7 +34,7 @@
     .btn-pulse { animation:pulse 1.5s infinite; }
     @keyframes pulse { 0%, 100%{ transform:scale(1); } 50%{ transform:scale(1.03); } }
 
-    /* HUD Framing: Fokus auf Kisten */
+    /* HUD Framing: Fokus auf Kisten & Best */
     .hud { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
     .stat { border:2px solid #000; border-radius:18px; padding:12px; background:#fff; text-align:center; }
     .stat .label { font-size:10px; opacity:.6; text-transform:uppercase; font-weight:800; margin-bottom:4px; }
@@ -68,6 +68,7 @@
       <button class="btn" id="resetBtn">RESET</button>
     </div>
 
+    <!-- HUD -->
     <section class="hud">
       <div class="stat"><div class="label">Kisten</div><div class="value" id="boxValue">2</div></div>
       <div class="stat"><div class="label">Best</div><div class="value" id="bestValue">0</div></div>
@@ -76,6 +77,7 @@
     <section class="game-shell">
       <canvas id="gameCanvas" width="960" height="540"></canvas>
 
+      <!-- START OVERLAY -->
       <div class="overlay" id="startOverlay">
         <div class="card">
           <h2 id="uiBrandSub">SYSTEM V1.0</h2>
@@ -89,6 +91,7 @@
         </div>
       </div>
 
+      <!-- NAME INPUT OVERLAY -->
       <div class="overlay hidden" id="nameOverlay">
         <div class="card">
           <h2>FOKUS BESTÄTIGT!</h2>
@@ -98,6 +101,7 @@
         </div>
       </div>
 
+      <!-- GAME OVER OVERLAY -->
       <div class="overlay hidden" id="gameOverOverlay">
         <div class="card">
           <h2>FOKUS VERLOREN</h2>
@@ -110,6 +114,7 @@
             <a id="uiPromoLink" href="#" target="_blank" class="btn" style="background:var(--brand-color); width:100%;">ZUM SHOP</a>
           </div>
 
+          <!-- ELITE REWARD (EASTER EGG) -->
           <div id="eliteReward" style="display:none; margin-top:15px; padding:15px; background:var(--brand-color); color:#fff; border-radius:16px;">
             <p style="font-size:12px; font-weight:800; margin-bottom:5px;">ELITE STATUS ERREICHT</p>
             <p style="font-size:18px; font-weight:900;">CODE: <span style="color:#000;" id="uiPromoCode">XXX</span></p>
@@ -118,6 +123,7 @@
       </div>
     </section>
 
+    <!-- LEADERBOARD -->
     <section class="leaderboard-container">
       <div style="font-weight:900; margin-bottom:8px; color:var(--danger);" id="uiMyth">30 KISTEN: NIEMAND</div>
       <div class="leaderboard-title">Global Focus Ranking (Top 10)</div>
@@ -126,39 +132,46 @@
   </main>
 
   <script>
-    // ==========================================
-    // CLIENT CONFIGURATION (DER SCHALTSCHRANK)
-    // ==========================================
+    // ======================================================
+    // ZENTRALE KUNDEN-KONFIGURATION (MASTER-SCHALTER)
+    // ======================================================
     const CLIENT_CONFIG = {
         // 1. SYSTEM & DATABASE
         id: "master-template",          // Pfad-ID für Firebase (Keine Leerzeichen!)
 
         // 2. BRANDING & TEXTS
-        brandTitle: "UNAUFHALTSAM",     // Großer Titel oben
-        brandSub: "PERFORMANCE TEST",   // Untertitel im Startscreen
+        brandTitle: "UNAUFHALTSAM",     // Haupttitel
+        brandSub: "PERFORMANCE TEST",   // Untertitel Startscreen
         brandColor: "#000000",          // Akzentfarbe (Hex-Code)
+        startDesc: "Halte die richtige Kiste. Verlieren ist sofort.",
 
         // 3. FEATURES & REWARDS
-        easterEggScore: 30,             // Ab wie vielen Kisten kommt der Code?
+        easterEggScore: 30,             // Benötigte Kisten für das Easter Egg (z.B. 30)
+        promoText: "ABSOLUTER FOKUS WIRD BELOHNT. SICHERE DIR DEINE REWARD.",
         promoCode: "DISCOUNT30",        // Der angezeigte Code
         promoLink: "https://your-link.com", // Link zum Shop
 
-        // 4. LEGAL (Impressum & Datenschutz Info)
+        // 4. LEGAL (Für Impressum & Datenschutz)
         impName: "John Doe",
         impStreet: "Sample Street 1",
         impCity: "12345 Sample City",
         impEmail: "contact@sample.com"
     };
 
-    // --- APPLY CONFIG ---
+    // --- ANWENDUNG DER KONFIGURATION ---
     document.documentElement.style.setProperty('--brand-color', CLIENT_CONFIG.brandColor);
     document.getElementById('uiPageTitle').textContent = CLIENT_CONFIG.brandTitle;
     document.getElementById('uiBrandTitle').textContent = CLIENT_CONFIG.brandTitle;
     document.getElementById('uiBrandSub').textContent = CLIENT_CONFIG.brandSub;
+    document.getElementById('uiStartDesc').textContent = CLIENT_CONFIG.startDesc;
+    document.getElementById('uiPromoText').textContent = CLIENT_CONFIG.promoText;
     document.getElementById('uiPromoLink').href = CLIENT_CONFIG.promoLink;
     document.getElementById('uiPromoCode').textContent = CLIENT_CONFIG.promoCode;
+    document.getElementById('uiMyth').textContent = CLIENT_CONFIG.easterEggScore + " KISTEN: NIEMAND";
 
-    // --- FIREBASE CONFIG ---
+    // ==========================================
+    // FIREBASE ENGINE (DYNAMIC PATHING)
+    // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyC0olKESyTP0rXUlnjGstLlGN50I1m_O2A",
       authDomain: "mg-challenge.firebaseapp.com",
@@ -171,12 +184,16 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
-    const dbRef = db.collection('artifacts').doc(CLIENT_CONFIG.id).collection('public').doc('data').collection('leaderboard');
+    // Der Pfad wird dynamisch durch die CLIENT_CONFIG.id generiert
+    const masterDbRef = db.collection('artifacts').doc(CLIENT_CONFIG.id).collection('public').doc('data').collection('leaderboard');
 
+    // Warte auf Auth, bevor Leaderboard geladen wird
     auth.onAuthStateChanged(user => { if (user) renderLeaderboard(); });
-    auth.signInAnonymously().catch(e => console.error("Auth Error:", e));
+    auth.signInAnonymously().catch(e => console.error("Firebase Auth Error:", e));
 
-    // --- GAME ENGINE ---
+    // ==========================================
+    // GAME ENGINE (WHITE LABEL LOGIC)
+    // ==========================================
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
     const boxDisplay = document.getElementById("boxValue");
@@ -193,40 +210,47 @@
     const boxes = [];
 
     async function saveScore() {
-      const name = document.getElementById("nameInput").value.trim().toUpperCase() || "ANONYM";
+      const name = document.getElementById("nameInput").value.trim().toUpperCase() || "ANONYMOUS";
+      if(!auth.currentUser) await auth.signInAnonymously();
       const uid = auth.currentUser.uid;
-      try {
-        const nameCheck = await dbRef.where("name", "==", name).get();
-        let taken = false;
-        nameCheck.forEach(doc => { if(doc.id !== uid) taken = true; });
-        if(taken && name !== "ANONYM") { alert("Name vergeben!"); return; }
 
-        const userRef = dbRef.doc(uid);
+      try {
+        const nameCheck = await masterDbRef.where("name", "==", name).get();
+        let taken = false;
+        nameCheck.forEach(doc => { if (doc.id !== uid) taken = true; });
+        if (taken && name !== "ANONYMOUS") { alert("Name vergeben!"); return; }
+
+        const userRef = masterDbRef.doc(uid);
         const userDoc = await userRef.get();
-        if (userDoc.exists && state.score <= userDoc.data().score) {
-          await userRef.update({ name: name });
+
+        if (userDoc.exists) {
+          if (state.score > userDoc.data().score) {
+            await userRef.update({ name: name, score: state.score, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+          } else {
+            await userRef.update({ name: name });
+          }
         } else {
           await userRef.set({ name: name, score: state.score, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
         }
         document.getElementById("nameOverlay").classList.add("hidden");
         document.getElementById("gameOverOverlay").classList.remove("hidden");
-      } catch (e) { console.error(e); }
+      } catch (e) { alert("Fehler beim Speichern."); }
     }
 
     function renderLeaderboard() {
-      dbRef.orderBy("score", "desc").limit(10).onSnapshot(snap => {
+      masterDbRef.orderBy("score", "desc").limit(10).onSnapshot(snap => {
         const list = document.getElementById("leaderboardList");
         list.innerHTML = "";
         snap.forEach(doc => {
           const d = doc.data();
           list.innerHTML += `<li class="leaderboard-entry"><span>${d.name}</span><span>${d.score + 2} Kisten</span></li>`;
         });
-      });
+      }, err => console.error("Leaderboard Error:", err));
     }
 
     function buildRound() {
       boxes.length = 0; 
-      state.boxCount = Math.min(30, 2 + state.score); 
+      state.boxCount = Math.min(31, 2 + state.score); 
       const count = state.boxCount;
       let cols = Math.ceil(Math.sqrt(count));
       const boxW = Math.max(45, Math.min(92, (canvas.width - 160) / cols - 24));
@@ -247,7 +271,7 @@
     function startNextSwap() {
       if (state.swapsRemaining <= 0) { state.activeSwap = null; setPhase("wait"); return; }
       let a, b;
-      // AGGRESSIVE LOGIK: 60% Fokus-Beteiligung der Zielbox
+      // AGGRESSIVE MISCH-LOGIK: 60% Fokus-Beteiligung der Zielbox
       if (Math.random() < 0.6) {
         a = boxes.findIndex(box => box.id === state.correctBoxId);
         b = Math.floor(Math.random() * boxes.length);
@@ -293,8 +317,9 @@
       if (state.score > state.best) { state.best = state.score; localStorage.setItem(BEST_KEY, String(state.best)); }
       document.getElementById("finalScore").textContent = state.boxCount + " KISTEN"; 
       document.getElementById("bestLine").textContent = `BEST: ${state.best + 2} KISTEN`; 
+      updateHud();
+      
       const elite = document.getElementById("eliteReward");
-      // Easter Egg Trigger Check
       if (state.boxCount >= CLIENT_CONFIG.easterEggScore) elite.style.display = "block"; else elite.style.display = "none";
       if (state.score > 0) document.getElementById("nameOverlay").classList.remove("hidden"); else document.getElementById("gameOverOverlay").classList.remove("hidden");
     }
