@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
@@ -22,8 +22,7 @@
       --shadow: rgba(0,0,0,.08);
       --success: #0f9d58;
       --danger: #d92d20;
-      /* Diese Farbe wird durch JS überschrieben */
-      --brand-color: #000000; 
+      --brand-color: #000000; /* Wird dynamisch überschrieben */
     }
 
     * { margin:0; padding:0; box-sizing:border-box; font-family:Arial, sans-serif; }
@@ -59,6 +58,9 @@
 
     #nameInput { border:2px solid #000; padding:14px; border-radius:12px; width:100%; font-size:18px; font-weight:900; text-align:center; margin:15px 0; outline:none; text-transform:uppercase; }
 
+    .legal-links { margin-top: 20px; display: flex; justify-content: center; gap: 20px; }
+    .legal-links a { font-size: 11px; color: #aaa; text-decoration: none; font-weight: bold; text-transform: uppercase; }
+
     @media (max-width:720px){ .hud{ grid-template-columns:repeat(2, minmax(0,1fr)); } .btn{ width:100%; } }
   </style>
 </head>
@@ -84,6 +86,11 @@
           <h2 id="uiBrandSub">SYSTEM V1.0</h2>
           <p>Fixiere die markierte Box. Absolute Präzision erforderlich.</p>
           <button class="btn" id="startBtn" style="margin-top:20px; width:100%;">SYSTEM STARTEN</button>
+          
+          <div class="legal-links">
+            <a href="impressum.html">Impressum</a>
+            <a href="datenschutz.html">Datenschutz</a>
+          </div>
         </div>
       </div>
 
@@ -146,7 +153,7 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    // --- 3. DYNAMISCHER DATENBANK-PFAD (Nutzt die ID aus der config.js) ---
+    // --- 3. DYNAMISCHER DATENBANK-PFAD (Nutzt die ID aus config.js) ---
     const masterDbRef = db.collection('artifacts').doc(CLIENT_CONFIG.id).collection('public').doc('data').collection('leaderboard');
 
     auth.signInAnonymously().catch(e => console.error("Firebase Auth Error:", e));
