@@ -1,44 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>UNAUFHALTSAM</title>
+  <title id="uiPageTitle">Focus System Master</title>
 
-  <!-- LOAD CLIENT CONFIGURATION -->
-  <script src="config.js"></script>
-
-  <!-- FIREBASE CORE SDKS -->
+  <!-- FIREBASE CORE SDKS (Compat Mode für maximale Stabilität) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
   <style>
     :root {
-      --black: #000;
-      --white: #fff;
+      --brand-color: #000000; 
       --bg: #f5f5f7;
+      --white: #fff;
       --grass: #e7f7e7;
       --shadow: rgba(0,0,0,.08);
       --success: #0f9d58;
       --danger: #d92d20;
-      --brand-color: #000000; 
     }
 
     * { margin:0; padding:0; box-sizing:border-box; font-family:Arial, sans-serif; }
 
-    body { background:var(--bg); color:var(--black); min-height:100vh; padding:20px 14px 40px; overflow-x:hidden; }
+    body { background:var(--bg); color:#000; min-height:100vh; padding:20px 14px 40px; overflow-x:hidden; }
 
     .wrap { width:100%; max-width:980px; margin:0 auto; display:flex; flex-direction:column; gap:18px; }
     .topbar { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
     .title h1 { font-size:clamp(24px, 5vw, 42px); line-height:1; font-weight:900; letter-spacing:-0.8px; text-transform: uppercase;}
 
-    .btn { appearance:none; border:none; background:#000; color:#fff; padding:16px 22px; border-radius:14px; font-weight:900; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; transition:transform .12s ease; -webkit-tap-highlight-color:transparent; }
+    .btn { appearance:none; border:none; background:#000; color:#fff; padding:16px 22px; border-radius:14px; font-weight:900; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; transition:transform .12s ease; -webkit-tap-highlight-color:transparent; text-transform: uppercase; }
     .btn:active { transform:scale(.98); }
     .btn-pulse { animation:pulse 1.5s infinite; }
     @keyframes pulse { 0%, 100%{ transform:scale(1); } 50%{ transform:scale(1.03); } }
 
-    .hud { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; }
+    /* HUD Framing: Fokus auf Kisten */
+    .hud { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
     .stat { border:2px solid #000; border-radius:18px; padding:12px; background:#fff; text-align:center; }
     .stat .label { font-size:10px; opacity:.6; text-transform:uppercase; font-weight:800; margin-bottom:4px; }
     .stat .value { font-size:clamp(18px, 4vw, 28px); font-weight:900; line-height:1; color: var(--brand-color); }
@@ -50,7 +47,7 @@
     .overlay.hidden { display:none; }
 
     .card { width:min(100%, 480px); background:#fff; border:2px solid #000; border-radius:22px; padding:30px 20px; }
-    .card h2 { font-weight:900; letter-spacing:-0.04em; text-transform: uppercase; }
+    .card h2 { font-weight:900; letter-spacing:-0.04em; text-transform: uppercase; margin-bottom: 10px; }
 
     .leaderboard-container { background:#fff; border:2px solid #000; border-radius:22px; padding:20px; margin-top:10px; }
     .leaderboard-title { font-weight:900; text-transform:uppercase; margin-bottom:10px; border-bottom:2px solid #000; padding-bottom:5px; }
@@ -61,7 +58,7 @@
     .legal-links { margin-top: 20px; display: flex; justify-content: center; gap: 20px; }
     .legal-links a { font-size: 11px; color: #aaa; text-decoration: none; font-weight: bold; text-transform: uppercase; }
 
-    @media (max-width:720px){ .hud{ grid-template-columns:repeat(2, minmax(0,1fr)); } .btn{ width:100%; } }
+    @media (max-width:720px){ .btn{ width:100%; } }
   </style>
 </head>
 <body>
@@ -71,72 +68,92 @@
       <button class="btn" id="resetBtn">RESET</button>
     </div>
 
+    <!-- HUD -->
     <section class="hud">
-      <div class="stat"><div class="label">Focus Score</div><div class="value" id="scoreValue">0</div></div>
-      <div class="stat"><div class="label">Level</div><div class="value" id="roundValue" style="color:#000;">1</div></div>
-      <div class="stat"><div class="label">Targets</div><div class="value" id="boxValue" style="color:#000;">2</div></div>
-      <div class="stat"><div class="label">Personal Best</div><div class="value" id="bestValue" style="color:#000;">0</div></div>
+      <div class="stat"><div class="label">Kisten</div><div class="value" id="boxValue">2</div></div>
+      <div class="stat"><div class="label">Best</div><div class="value" id="bestValue">0</div></div>
     </section>
 
     <section class="game-shell">
       <canvas id="gameCanvas" width="960" height="540"></canvas>
 
+      <!-- START -->
       <div class="overlay" id="startOverlay">
         <div class="card">
           <h2 id="uiBrandSub">SYSTEM V1.0</h2>
-          <p>Lock onto the marked target. Absolute precision required.</p>
+          <p id="uiStartDesc">Halte die richtige Kiste. Verlieren ist sofort.</p>
           <button class="btn" id="startBtn" style="margin-top:20px; width:100%;">START SYSTEM</button>
-          
-          <div class="legal-links">
-            <a href="impressum.html">Imprint</a>
-            <a href="datenschutz.html">Privacy</a>
-          </div>
         </div>
       </div>
 
+      <!-- NAME INPUT -->
       <div class="overlay hidden" id="nameOverlay">
         <div class="card">
-          <h2>FOCUS CONFIRMED!</h2>
-          <p>Enter your name into the global ranking:</p>
-          <input type="text" id="nameInput" placeholder="YOUR NAME" maxlength="12" />
-          <button class="btn" id="saveScoreBtn" style="width:100%;">SAVE RANK</button>
+          <h2>FOKUS BESTÄTIGT!</h2>
+          <p>Trage deinen Namen in das globale Ranking ein:</p>
+          <input type="text" id="nameInput" placeholder="DEIN NAME" maxlength="12" />
+          <button class="btn" id="saveScoreBtn" style="width:100%;">RANK SICHERN</button>
         </div>
       </div>
 
+      <!-- GAME OVER -->
       <div class="overlay hidden" id="gameOverOverlay">
         <div class="card">
-          <h2>FOCUS LOST</h2>
-          <div id="finalScore" style="font-size:64px; font-weight:900; margin:10px 0; color: var(--brand-color);">0</div>
-          <p id="bestLine" style="font-weight:800; opacity:0.6; margin-bottom:20px;">BEST: 0</p>
-         <button class="btn btn-pulse" id="restartBtn" style="width:100%; margin-bottom:12px;">TRY AGAIN</button>
+          <h2>FOKUS VERLOREN</h2>
+          <div id="finalScore" style="font-size:48px; font-weight:900; margin:10px 0; color: var(--brand-color);">0 KISTEN</div>
+          <p id="bestLine" style="font-weight:800; opacity:0.6; margin-bottom:20px;">BEST: 0 KISTEN</p>
+          <button class="btn btn-pulse" id="restartBtn" style="width:100%; margin-bottom:12px;">NOCHMAL</button>
           
           <div style="margin-top:15px; padding:15px; background:rgba(0,0,0,0.03); border-radius:16px;">
-            <p style="font-size:13px; font-weight:800; margin-bottom:10px; line-height:1.4;">ABSOLUTE FOCUS GETS REWARDED.</p>
-            <a id="uiPromoLink" href="#" target="_blank" class="btn" style="background:var(--brand-color); width:100%;">TO SHOP</a>
+            <p id="uiPromoText" style="font-size:13px; font-weight:800; margin-bottom:10px; line-height:1.4;">ABSOLUTER FOKUS WIRD BELOHNT.</p>
+            <a id="uiPromoLink" href="#" target="_blank" class="btn" style="background:var(--brand-color); width:100%;">ZUM SHOP</a>
           </div>
 
           <div id="eliteReward" style="display:none; margin-top:15px; padding:15px; background:var(--brand-color); color:#fff; border-radius:16px;">
-            <p style="font-size:12px; font-weight:800; margin-bottom:5px;">ELITE STATUS REACHED</p>
-            <p style="font-size:18px; font-weight:900;">YOUR CODE: <span style="color:#000;" id="uiPromoCode">XXX</span></p>
+            <p style="font-size:12px; font-weight:800; margin-bottom:5px;">ELITE STATUS ERREICHT</p>
+            <p style="font-size:18px; font-weight:900;">CODE: <span style="color:#000;" id="uiPromoCode">XXX</span></p>
           </div>
         </div>
       </div>
     </section>
 
+    <!-- LEADERBOARD -->
     <section class="leaderboard-container">
+      <div style="font-weight:900; margin-bottom:8px; color:var(--danger);" id="uiMyth">30 KISTEN: NIEMAND</div>
       <div class="leaderboard-title">Global Focus Ranking (Top 10)</div>
       <ul id="leaderboardList"></ul>
     </section>
   </main>
 
   <script>
-    document.documentElement.style.setProperty('--brand-color', CLIENT_CONFIG.brandColor);
-    document.getElementById('uiBrandTitle').textContent = CLIENT_CONFIG.brandTitle;
-    document.getElementById('uiBrandSub').textContent = CLIENT_CONFIG.brandSub;
-    document.getElementById('uiPromoLink').href = CLIENT_CONFIG.promoLink;
-    document.getElementById('uiPromoCode').textContent = CLIENT_CONFIG.promoCode;
-    document.title = CLIENT_CONFIG.brandTitle;
+    // ==========================================
+    // 1. MASTER CONFIGURATION (KUNDEN-ANPASSUNG)
+    // ==========================================
+    const CONFIG = {
+        id: "master-v1",                // Firebase-Dokument ID (Keine Leerzeichen!)
+        brandTitle: "UNAUFHALTSAM",     // Großer Titel oben
+        brandSub: "PERFORMANCE SYSTEM", // Untertitel im Startscreen
+        brandColor: "#b01fa5",          // Akzentfarbe (Hex-Code)
+        startDesc: "Halte die richtige Kiste. Verlieren ist sofort.",
+        promoText: "ABSOLUTER FOKUS WIRD BELOHNT. SICHERE DIR DEINE REWARD.",
+        promoLink: "https://ko-fi.com/s/f84c7bff38",
+        promoCode: "EDDIE30",           // Der Code für das Easter Egg
+        easterEggScore: 29              // Score-Grenze (Score 29 = 31 Kisten)
+    };
 
+    // --- APPLY CONFIG ---
+    document.documentElement.style.setProperty('--brand-color', CONFIG.brandColor);
+    document.getElementById('uiPageTitle').textContent = CONFIG.brandTitle;
+    document.getElementById('uiBrandTitle').textContent = CONFIG.brandTitle;
+    document.getElementById('uiBrandSub').textContent = CONFIG.brandSub;
+    document.getElementById('uiStartDesc').textContent = CONFIG.startDesc;
+    document.getElementById('uiPromoText').textContent = CONFIG.promoText;
+    document.getElementById('uiPromoLink').href = CONFIG.promoLink;
+    document.getElementById('uiPromoCode').textContent = CONFIG.promoCode;
+
+    // ==========================================
+    // 2. FIREBASE ENGINE
+    // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyC0olKESyTP0rXUlnjGstLlGN50I1m_O2A",
       authDomain: "mg-challenge.firebaseapp.com",
@@ -149,165 +166,93 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
+    const dbRef = db.collection('artifacts').doc(CONFIG.id).collection('public').doc('data').collection('leaderboard');
 
-    const masterDbRef = db.collection('artifacts').doc(CLIENT_CONFIG.id).collection('public').doc('data').collection('leaderboard');
+    auth.onAuthStateChanged(user => { if (user) renderLeaderboard(); });
+    auth.signInAnonymously().catch(e => console.error("Auth Error:", e));
 
-    auth.signInAnonymously().catch(e => console.error("Firebase Auth Error:", e));
-
+    // ==========================================
+    // 3. GAME ENGINE
+    // ==========================================
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
-    const scoreValue = document.getElementById("scoreValue");
-    const roundValue = document.getElementById("roundValue");
-    const boxValue = document.getElementById("boxValue");
-    const bestValue = document.getElementById("bestValue");
-    const startOverlay = document.getElementById("startOverlay");
-    const nameOverlay = document.getElementById("nameOverlay");
-    const gameOverOverlay = document.getElementById("gameOverOverlay");
-    const startBtn = document.getElementById("startBtn");
-    const restartBtn = document.getElementById("restartBtn");
-    const saveScoreBtn = document.getElementById("saveScoreBtn");
-    const resetBtn = document.getElementById("resetBtn");
-    const nameInput = document.getElementById("nameInput");
-    const leaderboardList = document.getElementById("leaderboardList");
-    const finalScoreDisplay = document.getElementById("finalScore");
-    const bestLineDisplay = document.getElementById("bestLine");
-
-    const BEST_KEY = "focusBest_" + CLIENT_CONFIG.id;
+    const boxDisplay = document.getElementById("boxValue");
+    const bestDisplay = document.getElementById("bestValue");
+    const BEST_KEY = "focusBest_" + CONFIG.id;
 
     let state = {
-      running: false, score: 0, round: 1, boxCount: 2,
+      running: false, score: 0, boxCount: 2,
       best: Number(localStorage.getItem(BEST_KEY) || 0),
       phase: "idle", phaseStartedAt: 0, selectedBoxId: null,
       correctBoxId: null, hoverBoxId: null, showBallTime: 1400,
-      shuffleDuration: 2200, swapsRemaining: 0, activeSwap: null, breatherMs: 300
+      swapsRemaining: 0, activeSwap: null, breatherMs: 300
     };
-
     const boxes = [];
 
     async function saveScore() {
-      const name = nameInput.value.trim().toUpperCase() || "ANONYMOUS";
-      if(!auth.currentUser) await auth.signInAnonymously();
+      const name = document.getElementById("nameInput").value.trim().toUpperCase() || "ANONYM";
       const uid = auth.currentUser.uid;
-
       try {
-        const nameCheck = await masterDbRef.where("name", "==", name).get();
-        let nameIsTaken = false;
-        nameCheck.forEach(doc => { if (doc.id !== uid) nameIsTaken = true; });
-
-        if (nameIsTaken && name !== "ANONYMOUS") {
-          alert("This name is already taken! Please choose another one.");
-          return; 
-        }
-
-        const userRef = masterDbRef.doc(uid);
+        const userRef = dbRef.doc(uid);
         const userDoc = await userRef.get();
-
-        if (userDoc.exists) {
-          const oldScore = userDoc.data().score;
-          if (state.score > oldScore) {
-            await userRef.update({ name: name, score: state.score, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-          } else {
-            await userRef.update({ name: name });
-          }
+        if (userDoc.exists && state.score <= userDoc.data().score) {
+          await userRef.update({ name: name });
         } else {
           await userRef.set({ name: name, score: state.score, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
         }
-
-        nameOverlay.classList.add("hidden");
-        gameOverOverlay.classList.remove("hidden");
-      } catch (e) { 
-        alert("Error saving. Please check your connection.");
-      }
+        document.getElementById("nameOverlay").classList.add("hidden");
+        document.getElementById("gameOverOverlay").classList.remove("hidden");
+      } catch (e) { console.error(e); }
     }
 
     function renderLeaderboard() {
-      masterDbRef.orderBy("score", "desc").limit(10).onSnapshot(snap => {
-        leaderboardList.innerHTML = "";
+      dbRef.orderBy("score", "desc").limit(10).onSnapshot(snap => {
+        const list = document.getElementById("leaderboardList");
+        list.innerHTML = "";
         snap.forEach(doc => {
           const d = doc.data();
-          leaderboardList.innerHTML += `<li class="leaderboard-entry"><span>${d.name}</span><span>${d.score}</span></li>`;
+          list.innerHTML += `<li class="leaderboard-entry"><span>${d.name}</span><span>${d.score + 2} Kisten</span></li>`;
         });
       });
     }
 
-    function setPhase(n) { state.phase = n; state.phaseStartedAt = performance.now(); }
-    function lerp(a, b, t) { return a + (b - a) * t; }
-    function easeInOutQuad(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
-
-    function roundRect(c, x, y, w, h, r, fill, stroke) {
-      c.beginPath(); c.moveTo(x + r, y); c.lineTo(x + w - r, y);
-      c.quadraticCurveTo(x + w, y, x + w, y + r); c.lineTo(x + w, y + h - r);
-      c.quadraticCurveTo(x + w, y + h, x + w - r, y + h); c.lineTo(x + r, y + h);
-      c.quadraticCurveTo(x, y + h, x, y + h - r); c.lineTo(x, y + r);
-      c.quadraticCurveTo(x, y, x + r, y); c.closePath();
-      if (fill) c.fill(); if (stroke) c.stroke();
-    }
-
-    function drawBoxes() {
-      boxes.forEach(box => {
-        const isHovered = state.phase === "pick" && state.hoverBoxId === box.id;
-        const y = box.y - box.lift;
-        const cx = box.x + box.w / 2;
-        const cy = y + box.h / 2;
-        ctx.save();
-        
-        let tilt = 0;
-        if (state.phase === "shuffle" && state.activeSwap) {
-          if (box.id === state.activeSwap.aId) tilt = -0.06;
-          if (box.id === state.activeSwap.bId) tilt = 0.06;
-        }
-        
-        ctx.translate(cx, cy); ctx.rotate(tilt); ctx.translate(-cx, -cy);
-        ctx.fillStyle = isHovered ? "#eee" : "#fff";
-        ctx.strokeStyle = "#000"; ctx.lineWidth = 3;
-        roundRect(ctx, box.x, y, box.w, box.h, 12, true, true);
-        
-        if (state.phase === "show" && box.id === state.correctBoxId) {
-          ctx.save();
-          const pulse = Math.sin(performance.now() / 150) * 0.2 + 0.8;
-          ctx.globalAlpha = pulse;
-          ctx.strokeStyle = CLIENT_CONFIG.brandColor; ctx.lineWidth = 6;
-          roundRect(ctx, box.x - 4, y - 4, box.w + 8, box.h + 8, 14, false, true);
-          
-          ctx.fillStyle = "#000000"; 
-          ctx.font = `900 ${Math.floor(box.w * 0.18)}px Arial`;
-          ctx.textAlign = "center";
-          ctx.fillText("FOCUS", cx, cy + (box.w * 0.06));
-          ctx.restore();
-        }
-
-        if (isHovered || (state.phase === "reveal" && state.selectedBoxId === box.id)) {
-          ctx.strokeStyle = (state.phase === "reveal") ? (state.selectedBoxId === state.correctBoxId ? "#0f9d58" : "#d92d20") : CLIENT_CONFIG.brandColor;
-          ctx.lineWidth = 5; roundRect(ctx, box.x - 4, y - 4, box.w + 8, box.h + 8, 14, false, true);
-        }
-        ctx.restore();
-      });
-    }
-
     function buildRound() {
-      boxes.length = 0; const count = state.boxCount;
+      boxes.length = 0; 
+      state.boxCount = Math.min(30, 2 + state.score); 
+      const count = state.boxCount;
       let cols = Math.ceil(Math.sqrt(count));
-      const boxW = Math.min(92, (canvas.width - 160) / cols - 24);
+      const boxW = Math.max(45, Math.min(92, (canvas.width - 160) / cols - 24));
       const gridW = cols * boxW + (cols - 1) * 24;
       const gridH = Math.ceil(count / cols) * boxW + (Math.ceil(count / cols) - 1) * 24;
-      const startX = (canvas.width - gridW) / 2; const startY = 160 + ((canvas.height - 200) - gridH) / 2;
+      const startX = (canvas.width - gridW) / 2; 
+      const startY = 160 + ((canvas.height - 200) - gridH) / 2;
       for (let i = 0; i < count; i++) {
         const r = Math.floor(i / cols); const c = i % cols;
         boxes.push({ id: i, x: startX + c * (boxW + 24), y: startY + r * (boxW + 24), w: boxW, h: boxW, lift: 0 });
       }
       state.correctBoxId = Math.floor(Math.random() * count);
-      state.swapsRemaining = Math.max(4, 4 + Math.floor(count * 1.6));
+      state.swapsRemaining = Math.max(4, 3 + Math.floor(count * 1.5));
       setPhase("show");
+      updateHud();
     }
 
     function startNextSwap() {
       if (state.swapsRemaining <= 0) { state.activeSwap = null; setPhase("wait"); return; }
-      let a = Math.floor(Math.random() * boxes.length), b = Math.floor(Math.random() * boxes.length);
-      while (b === a) b = Math.floor(Math.random() * boxes.length);
+      let a, b;
+      // AGGRESSIVE LOGIK: 60% Chance dass die Zielbox bewegt wird
+      if (Math.random() < 0.6) {
+        a = boxes.findIndex(box => box.id === state.correctBoxId);
+        b = Math.floor(Math.random() * boxes.length);
+        while (b === a) b = Math.floor(Math.random() * boxes.length);
+      } else {
+        a = Math.floor(Math.random() * boxes.length);
+        b = Math.floor(Math.random() * boxes.length);
+        while (b === a) b = Math.floor(Math.random() * boxes.length);
+      }
       state.activeSwap = {
         aId: boxes[a].id, bId: boxes[b].id, aStartX: boxes[a].x, bStartX: boxes[b].x, aStartY: boxes[a].y, bStartY: boxes[b].y,
         aTargetX: boxes[b].x, bTargetX: boxes[a].x, aTargetY: boxes[b].y, bTargetY: boxes[a].y,
-        start: performance.now(), duration: Math.max(260, (2400 - state.score * 50) / 6)
+        start: performance.now(), duration: Math.max(180, (2200 - state.score * 70) / 7.5)
       };
       state.swapsRemaining--;
     }
@@ -329,10 +274,7 @@
         if (s) s.lift = Math.min(s.h * 0.8, s.lift + 5);
         if (c && c.id !== state.selectedBoxId) c.lift = Math.min(c.h * 0.8, c.lift + 5);
         if (ts - state.phaseStartedAt > 1200) {
-          if (state.selectedBoxId === state.correctBoxId) {
-            state.score++; state.round++; state.boxCount = Math.min(18, 2 + Math.floor(state.score / 1.5));
-            buildRound(); updateHud();
-          } else gameOver();
+          if (state.selectedBoxId === state.correctBoxId) { state.score++; buildRound(); } else gameOver();
         }
       }
       if (state.phase !== "reveal") boxes.forEach(b => b.lift = Math.max(0, b.lift - 6));
@@ -341,48 +283,37 @@
     function gameOver() {
       state.running = false; setPhase("gameover");
       if (state.score > state.best) { state.best = state.score; localStorage.setItem(BEST_KEY, String(state.best)); }
-      finalScoreDisplay.textContent = state.score; bestLineDisplay.textContent = `BEST: ${state.best}`; updateHud();
-      
-      const eliteReward = document.getElementById("eliteReward");
-      if (eliteReward) {
-        if (state.score >= CLIENT_CONFIG.easterEggScore) {
-          eliteReward.style.display = "block";
-        } else {
-          eliteReward.style.display = "none";
+      document.getElementById("finalScore").textContent = state.boxCount + " KISTEN"; 
+      document.getElementById("bestLine").textContent = `BEST: ${state.best + 2} KISTEN`; 
+      const elite = document.getElementById("eliteReward");
+      if (state.score >= CONFIG.easterEggScore) elite.style.display = "block"; else elite.style.display = "none";
+      if (state.score > 0) document.getElementById("nameOverlay").classList.remove("hidden"); else document.getElementById("gameOverOverlay").classList.remove("hidden");
+    }
+
+    function updateHud() { boxDisplay.textContent = state.boxCount; bestDisplay.textContent = state.best + 2; }
+    function setPhase(n) { state.phase = n; state.phaseStartedAt = performance.now(); }
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function easeInOutQuad(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+
+    function drawBoxes() {
+      boxes.forEach(box => {
+        const isHovered = state.phase === "pick" && state.hoverBoxId === box.id;
+        const y = box.y - box.lift;
+        ctx.save();
+        ctx.fillStyle = isHovered ? "#eee" : "#fff"; ctx.strokeStyle = "#000"; ctx.lineWidth = 3;
+        ctx.strokeRect(box.x, y, box.w, box.h); ctx.fillRect(box.x, y, box.w, box.h);
+        if (state.phase === "show" && box.id === state.correctBoxId) {
+          ctx.strokeStyle = CONFIG.brandColor; ctx.lineWidth = 6; ctx.strokeRect(box.x - 4, y - 4, box.w + 8, box.h + 8);
+          ctx.fillStyle = "#000"; ctx.font = "900 14px Arial"; ctx.textAlign = "center";
+          ctx.fillText("FOCUS", box.x + box.w/2, y + box.w/2 + 5);
         }
-      }
-
-      if (state.score > 0) { nameOverlay.classList.remove("hidden"); nameInput.value = ""; } else gameOverOverlay.classList.remove("hidden");
+        if (isHovered || (state.phase === "reveal" && state.selectedBoxId === box.id)) {
+          ctx.strokeStyle = (state.phase === "reveal") ? (state.selectedBoxId === state.correctBoxId ? "#0f9d58" : "#d92d20") : CONFIG.brandColor;
+          ctx.lineWidth = 5; ctx.strokeRect(box.x - 4, y - 4, box.w + 8, box.h + 8);
+        }
+        ctx.restore();
+      });
     }
-
-    function updateHud() {
-      scoreValue.textContent = state.score; roundValue.textContent = state.round;
-      boxValue.textContent = state.boxCount; bestValue.textContent = state.best;
-    }
-
-    function startGame() {
-      state.running = true; state.score = 0; state.round = 1; state.boxCount = 2;
-      buildRound(); updateHud();
-      startOverlay.classList.add("hidden"); gameOverOverlay.classList.add("hidden"); nameOverlay.classList.add("hidden");
-      document.getElementById("eliteReward").style.display = "none";
-    }
-
-    function getCanvasPos(e) {
-      const r = canvas.getBoundingClientRect();
-      const cX = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
-      const cY = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
-      return { x: cX * (canvas.width / r.width), y: cY * (canvas.height / r.height) };
-    }
-
-    function handleInteraction(e) {
-      const { x, y } = getCanvasPos(e);
-      if (state.phase === "pick") {
-        boxes.forEach(b => { if (x >= b.x && x <= b.x + b.w && y >= b.y - b.lift && y <= b.y - b.lift + b.h) { state.selectedBoxId = b.id; setPhase("reveal"); } });
-      }
-    }
-
-    canvas.addEventListener("mousedown", handleInteraction);
-    canvas.addEventListener("touchstart", e => { e.preventDefault(); handleInteraction(e); }, {passive: false});
 
     function loop(ts) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -391,12 +322,17 @@
       requestAnimationFrame(loop);
     }
 
-    startBtn.onclick = startGame;
-    saveScoreBtn.onclick = saveScore;
-    restartBtn.onclick = startGame;
-    resetBtn.onclick = () => location.reload();
+    document.getElementById("startBtn").onclick = () => { state.running = true; state.score = 0; buildRound(); document.getElementById("startOverlay").classList.add("hidden"); };
+    document.getElementById("saveScoreBtn").onclick = saveScore;
+    document.getElementById("restartBtn").onclick = () => { state.running = true; state.score = 0; buildRound(); document.getElementById("gameOverOverlay").classList.add("hidden"); };
+    document.getElementById("resetBtn").onclick = () => location.reload();
 
-    renderLeaderboard();
+    canvas.onmousedown = e => {
+      const r = canvas.getBoundingClientRect();
+      const x = (e.clientX - r.left) * (canvas.width / r.width), y = (e.clientY - r.top) * (canvas.height / r.height);
+      if (state.phase === "pick") boxes.forEach(b => { if (x >= b.x && x <= b.x + b.w && y >= b.y - b.lift && y <= b.y - b.lift + b.h) { state.selectedBoxId = b.id; setPhase("reveal"); } });
+    };
+
     requestAnimationFrame(loop);
   </script>
 </body>
