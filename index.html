@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title id="uiPageTitle">Focus System Master</title>
 
-  <!-- FIREBASE CORE SDKS (Compat Mode für maximale Stabilität) -->
+  <!-- FIREBASE CORE SDKS -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -58,7 +58,7 @@
     .legal-links { margin-top: 20px; display: flex; justify-content: center; gap: 20px; }
     .legal-links a { font-size: 11px; color: #aaa; text-decoration: none; font-weight: bold; text-transform: uppercase; }
 
-    @media (max-width:720px){ .btn{ width:100%; } }
+    @media (max-width:720px){ .btn { width:100%; } }
   </style>
 </head>
 <body>
@@ -68,7 +68,6 @@
       <button class="btn" id="resetBtn">RESET</button>
     </div>
 
-    <!-- HUD -->
     <section class="hud">
       <div class="stat"><div class="label">Kisten</div><div class="value" id="boxValue">2</div></div>
       <div class="stat"><div class="label">Best</div><div class="value" id="bestValue">0</div></div>
@@ -77,16 +76,19 @@
     <section class="game-shell">
       <canvas id="gameCanvas" width="960" height="540"></canvas>
 
-      <!-- START -->
       <div class="overlay" id="startOverlay">
         <div class="card">
           <h2 id="uiBrandSub">SYSTEM V1.0</h2>
           <p id="uiStartDesc">Halte die richtige Kiste. Verlieren ist sofort.</p>
           <button class="btn" id="startBtn" style="margin-top:20px; width:100%;">START SYSTEM</button>
+          
+          <div class="legal-links">
+            <a href="impressum.html">Imprint</a>
+            <a href="datenschutz.html">Privacy</a>
+          </div>
         </div>
       </div>
 
-      <!-- NAME INPUT -->
       <div class="overlay hidden" id="nameOverlay">
         <div class="card">
           <h2>FOKUS BESTÄTIGT!</h2>
@@ -96,7 +98,6 @@
         </div>
       </div>
 
-      <!-- GAME OVER -->
       <div class="overlay hidden" id="gameOverOverlay">
         <div class="card">
           <h2>FOKUS VERLOREN</h2>
@@ -117,7 +118,6 @@
       </div>
     </section>
 
-    <!-- LEADERBOARD -->
     <section class="leaderboard-container">
       <div style="font-weight:900; margin-bottom:8px; color:var(--danger);" id="uiMyth">30 KISTEN: NIEMAND</div>
       <div class="leaderboard-title">Global Focus Ranking (Top 10)</div>
@@ -127,33 +127,38 @@
 
   <script>
     // ==========================================
-    // 1. MASTER CONFIGURATION (KUNDEN-ANPASSUNG)
+    // CLIENT CONFIGURATION (DER SCHALTSCHRANK)
     // ==========================================
-    const CONFIG = {
-        id: "master-v1",                // Firebase-Dokument ID (Keine Leerzeichen!)
+    const CLIENT_CONFIG = {
+        // 1. SYSTEM & DATABASE
+        id: "master-template",          // Pfad-ID für Firebase (Keine Leerzeichen!)
+
+        // 2. BRANDING & TEXTS
         brandTitle: "UNAUFHALTSAM",     // Großer Titel oben
-        brandSub: "PERFORMANCE SYSTEM", // Untertitel im Startscreen
-        brandColor: "#b01fa5",          // Akzentfarbe (Hex-Code)
-        startDesc: "Halte die richtige Kiste. Verlieren ist sofort.",
-        promoText: "ABSOLUTER FOKUS WIRD BELOHNT. SICHERE DIR DEINE REWARD.",
-        promoLink: "https://ko-fi.com/s/f84c7bff38",
-        promoCode: "EDDIE30",           // Der Code für das Easter Egg
-        easterEggScore: 29              // Score-Grenze (Score 29 = 31 Kisten)
+        brandSub: "PERFORMANCE TEST",   // Untertitel im Startscreen
+        brandColor: "#000000",          // Akzentfarbe (Hex-Code)
+
+        // 3. FEATURES & REWARDS
+        easterEggScore: 30,             // Ab wie vielen Kisten kommt der Code?
+        promoCode: "DISCOUNT30",        // Der angezeigte Code
+        promoLink: "https://your-link.com", // Link zum Shop
+
+        // 4. LEGAL (Impressum & Datenschutz Info)
+        impName: "John Doe",
+        impStreet: "Sample Street 1",
+        impCity: "12345 Sample City",
+        impEmail: "contact@sample.com"
     };
 
     // --- APPLY CONFIG ---
-    document.documentElement.style.setProperty('--brand-color', CONFIG.brandColor);
-    document.getElementById('uiPageTitle').textContent = CONFIG.brandTitle;
-    document.getElementById('uiBrandTitle').textContent = CONFIG.brandTitle;
-    document.getElementById('uiBrandSub').textContent = CONFIG.brandSub;
-    document.getElementById('uiStartDesc').textContent = CONFIG.startDesc;
-    document.getElementById('uiPromoText').textContent = CONFIG.promoText;
-    document.getElementById('uiPromoLink').href = CONFIG.promoLink;
-    document.getElementById('uiPromoCode').textContent = CONFIG.promoCode;
+    document.documentElement.style.setProperty('--brand-color', CLIENT_CONFIG.brandColor);
+    document.getElementById('uiPageTitle').textContent = CLIENT_CONFIG.brandTitle;
+    document.getElementById('uiBrandTitle').textContent = CLIENT_CONFIG.brandTitle;
+    document.getElementById('uiBrandSub').textContent = CLIENT_CONFIG.brandSub;
+    document.getElementById('uiPromoLink').href = CLIENT_CONFIG.promoLink;
+    document.getElementById('uiPromoCode').textContent = CLIENT_CONFIG.promoCode;
 
-    // ==========================================
-    // 2. FIREBASE ENGINE
-    // ==========================================
+    // --- FIREBASE CONFIG ---
     const firebaseConfig = {
       apiKey: "AIzaSyC0olKESyTP0rXUlnjGstLlGN50I1m_O2A",
       authDomain: "mg-challenge.firebaseapp.com",
@@ -166,19 +171,17 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
-    const dbRef = db.collection('artifacts').doc(CONFIG.id).collection('public').doc('data').collection('leaderboard');
+    const dbRef = db.collection('artifacts').doc(CLIENT_CONFIG.id).collection('public').doc('data').collection('leaderboard');
 
     auth.onAuthStateChanged(user => { if (user) renderLeaderboard(); });
     auth.signInAnonymously().catch(e => console.error("Auth Error:", e));
 
-    // ==========================================
-    // 3. GAME ENGINE
-    // ==========================================
+    // --- GAME ENGINE ---
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
     const boxDisplay = document.getElementById("boxValue");
     const bestDisplay = document.getElementById("bestValue");
-    const BEST_KEY = "focusBest_" + CONFIG.id;
+    const BEST_KEY = "focusBest_" + CLIENT_CONFIG.id;
 
     let state = {
       running: false, score: 0, boxCount: 2,
@@ -193,6 +196,11 @@
       const name = document.getElementById("nameInput").value.trim().toUpperCase() || "ANONYM";
       const uid = auth.currentUser.uid;
       try {
+        const nameCheck = await dbRef.where("name", "==", name).get();
+        let taken = false;
+        nameCheck.forEach(doc => { if(doc.id !== uid) taken = true; });
+        if(taken && name !== "ANONYM") { alert("Name vergeben!"); return; }
+
         const userRef = dbRef.doc(uid);
         const userDoc = await userRef.get();
         if (userDoc.exists && state.score <= userDoc.data().score) {
@@ -239,7 +247,7 @@
     function startNextSwap() {
       if (state.swapsRemaining <= 0) { state.activeSwap = null; setPhase("wait"); return; }
       let a, b;
-      // AGGRESSIVE LOGIK: 60% Chance dass die Zielbox bewegt wird
+      // AGGRESSIVE LOGIK: 60% Fokus-Beteiligung der Zielbox
       if (Math.random() < 0.6) {
         a = boxes.findIndex(box => box.id === state.correctBoxId);
         b = Math.floor(Math.random() * boxes.length);
@@ -286,7 +294,8 @@
       document.getElementById("finalScore").textContent = state.boxCount + " KISTEN"; 
       document.getElementById("bestLine").textContent = `BEST: ${state.best + 2} KISTEN`; 
       const elite = document.getElementById("eliteReward");
-      if (state.score >= CONFIG.easterEggScore) elite.style.display = "block"; else elite.style.display = "none";
+      // Easter Egg Trigger Check
+      if (state.boxCount >= CLIENT_CONFIG.easterEggScore) elite.style.display = "block"; else elite.style.display = "none";
       if (state.score > 0) document.getElementById("nameOverlay").classList.remove("hidden"); else document.getElementById("gameOverOverlay").classList.remove("hidden");
     }
 
@@ -303,12 +312,12 @@
         ctx.fillStyle = isHovered ? "#eee" : "#fff"; ctx.strokeStyle = "#000"; ctx.lineWidth = 3;
         ctx.strokeRect(box.x, y, box.w, box.h); ctx.fillRect(box.x, y, box.w, box.h);
         if (state.phase === "show" && box.id === state.correctBoxId) {
-          ctx.strokeStyle = CONFIG.brandColor; ctx.lineWidth = 6; ctx.strokeRect(box.x - 4, y - 4, box.w + 8, box.h + 8);
+          ctx.strokeStyle = CLIENT_CONFIG.brandColor; ctx.lineWidth = 6; ctx.strokeRect(box.x - 4, y - 4, box.w + 8, box.h + 8);
           ctx.fillStyle = "#000"; ctx.font = "900 14px Arial"; ctx.textAlign = "center";
-          ctx.fillText("FOCUS", box.x + box.w/2, y + box.w/2 + 5);
+          ctx.fillText("TARGET", box.x + box.w/2, y + box.w/2 + 5);
         }
         if (isHovered || (state.phase === "reveal" && state.selectedBoxId === box.id)) {
-          ctx.strokeStyle = (state.phase === "reveal") ? (state.selectedBoxId === state.correctBoxId ? "#0f9d58" : "#d92d20") : CONFIG.brandColor;
+          ctx.strokeStyle = (state.phase === "reveal") ? (state.selectedBoxId === state.correctBoxId ? "#0f9d58" : "#d92d20") : CLIENT_CONFIG.brandColor;
           ctx.lineWidth = 5; ctx.strokeRect(box.x - 4, y - 4, box.w + 8, box.h + 8);
         }
         ctx.restore();
