@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>FOCUS SYSTEM</title>
+  <title>UNAUFHALTSAM</title>
 
-  <!-- LADE KUNDEN-KONFIGURATION -->
+  <!-- LOAD CLIENT CONFIGURATION -->
   <script src="config.js"></script>
 
   <!-- FIREBASE CORE SDKS -->
@@ -22,7 +22,7 @@
       --shadow: rgba(0,0,0,.08);
       --success: #0f9d58;
       --danger: #d92d20;
-      --brand-color: #000000; /* Wird dynamisch überschrieben */
+      --brand-color: #000000; 
     }
 
     * { margin:0; padding:0; box-sizing:border-box; font-family:Arial, sans-serif; }
@@ -84,41 +84,40 @@
       <div class="overlay" id="startOverlay">
         <div class="card">
           <h2 id="uiBrandSub">SYSTEM V1.0</h2>
-          <p>Fixiere die markierte Box. Absolute Präzision erforderlich.</p>
-          <button class="btn" id="startBtn" style="margin-top:20px; width:100%;">SYSTEM STARTEN</button>
+          <p>Lock onto the marked target. Absolute precision required.</p>
+          <button class="btn" id="startBtn" style="margin-top:20px; width:100%;">START SYSTEM</button>
           
           <div class="legal-links">
-            <a href="impressum.html">Impressum</a>
-            <a href="datenschutz.html">Datenschutz</a>
+            <a href="impressum.html">Imprint</a>
+            <a href="datenschutz.html">Privacy</a>
           </div>
         </div>
       </div>
 
       <div class="overlay hidden" id="nameOverlay">
         <div class="card">
-          <h2>FOKUS BESTÄTIGT!</h2>
-          <p>Trage dich in das globale Ranking ein:</p>
-          <input type="text" id="nameInput" placeholder="DEIN NAME" maxlength="12" />
-          <button class="btn" id="saveScoreBtn" style="width:100%;">RANKING SICHERN</button>
+          <h2>FOCUS CONFIRMED!</h2>
+          <p>Enter your name into the global ranking:</p>
+          <input type="text" id="nameInput" placeholder="YOUR NAME" maxlength="12" />
+          <button class="btn" id="saveScoreBtn" style="width:100%;">SAVE RANK</button>
         </div>
       </div>
 
       <div class="overlay hidden" id="gameOverOverlay">
         <div class="card">
-          <h2>FOKUS VERLOREN</h2>
+          <h2>FOCUS LOST</h2>
           <div id="finalScore" style="font-size:64px; font-weight:900; margin:10px 0; color: var(--brand-color);">0</div>
           <p id="bestLine" style="font-weight:800; opacity:0.6; margin-bottom:20px;">BEST: 0</p>
-         <button class="btn btn-pulse" id="restartBtn" style="width:100%; margin-bottom:12px;">NEUER VERSUCH</button>
+         <button class="btn btn-pulse" id="restartBtn" style="width:100%; margin-bottom:12px;">TRY AGAIN</button>
           
           <div style="margin-top:15px; padding:15px; background:rgba(0,0,0,0.03); border-radius:16px;">
-            <p style="font-size:13px; font-weight:800; margin-bottom:10px; line-height:1.4;">ABSOLUTER FOKUS WIRD BELOHNT.</p>
-            <a id="uiPromoLink" href="#" target="_blank" class="btn" style="background:var(--brand-color); width:100%;">ZUM SHOP</a>
+            <p style="font-size:13px; font-weight:800; margin-bottom:10px; line-height:1.4;">ABSOLUTE FOCUS GETS REWARDED.</p>
+            <a id="uiPromoLink" href="#" target="_blank" class="btn" style="background:var(--brand-color); width:100%;">TO SHOP</a>
           </div>
 
-          <!-- DYNAMISCHES EASTER EGG -->
           <div id="eliteReward" style="display:none; margin-top:15px; padding:15px; background:var(--brand-color); color:#fff; border-radius:16px;">
-            <p style="font-size:12px; font-weight:800; margin-bottom:5px;">ELITE STATUS ERREICHT</p>
-            <p style="font-size:18px; font-weight:900;">DEIN CODE: <span style="color:#000;" id="uiPromoCode">XXX</span></p>
+            <p style="font-size:12px; font-weight:800; margin-bottom:5px;">ELITE STATUS REACHED</p>
+            <p style="font-size:18px; font-weight:900;">YOUR CODE: <span style="color:#000;" id="uiPromoCode">XXX</span></p>
           </div>
         </div>
       </div>
@@ -131,15 +130,13 @@
   </main>
 
   <script>
-    // --- 1. SETZE BRANDING AUS CONFIG.JS ---
     document.documentElement.style.setProperty('--brand-color', CLIENT_CONFIG.brandColor);
     document.getElementById('uiBrandTitle').textContent = CLIENT_CONFIG.brandTitle;
     document.getElementById('uiBrandSub').textContent = CLIENT_CONFIG.brandSub;
     document.getElementById('uiPromoLink').href = CLIENT_CONFIG.promoLink;
     document.getElementById('uiPromoCode').textContent = CLIENT_CONFIG.promoCode;
-    document.title = CLIENT_CONFIG.brandTitle + " | FOCUS SYSTEM";
+    document.title = CLIENT_CONFIG.brandTitle;
 
-    // --- 2. FIREBASE CONFIGURATION ---
     const firebaseConfig = {
       apiKey: "AIzaSyC0olKESyTP0rXUlnjGstLlGN50I1m_O2A",
       authDomain: "mg-challenge.firebaseapp.com",
@@ -153,7 +150,6 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    // --- 3. DYNAMISCHER DATENBANK-PFAD (Nutzt die ID aus config.js) ---
     const masterDbRef = db.collection('artifacts').doc(CLIENT_CONFIG.id).collection('public').doc('data').collection('leaderboard');
 
     auth.signInAnonymously().catch(e => console.error("Firebase Auth Error:", e));
@@ -188,9 +184,8 @@
 
     const boxes = [];
 
-    // --- LOGIK ---
     async function saveScore() {
-      const name = nameInput.value.trim().toUpperCase() || "ANONYM";
+      const name = nameInput.value.trim().toUpperCase() || "ANONYMOUS";
       if(!auth.currentUser) await auth.signInAnonymously();
       const uid = auth.currentUser.uid;
 
@@ -199,8 +194,8 @@
         let nameIsTaken = false;
         nameCheck.forEach(doc => { if (doc.id !== uid) nameIsTaken = true; });
 
-        if (nameIsTaken && name !== "ANONYM") {
-          alert("Dieser Name ist bereits vergeben! Bitte wähle einen anderen.");
+        if (nameIsTaken && name !== "ANONYMOUS") {
+          alert("This name is already taken! Please choose another one.");
           return; 
         }
 
@@ -221,7 +216,7 @@
         nameOverlay.classList.add("hidden");
         gameOverOverlay.classList.remove("hidden");
       } catch (e) { 
-        alert("Fehler beim Speichern. Prüfe deine Verbindung.");
+        alert("Error saving. Please check your connection.");
       }
     }
 
