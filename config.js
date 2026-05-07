@@ -11,24 +11,24 @@ const CLIENT_CONFIG = {
     // 2. TEXTS & BRANDING (Only "UNAUFHALTSAM" is German)
     brandTitle: "UNAUFHALTSAM",
     brandSub: "PRECISION CHALLENGE V1.0",
-    startDesc: "Focus on the target box. Any mistake ends the system immediately.",
+    startDesc: "Focus on the target box. Luxury means nothing without focus. Any mistake ends the system immediately.",
     boxOverlayText: "FOCUS",        // Text shown on the target box
     
     // 3. REWARDS
     rewardTitle: "ELITE STATUS REACHED: CLAIM YOUR REWARD",
     rewardSuccess: "CLAIMED. YOU WILL BE CONTACTED.",
 
-    // 4. PSYCHOLOGICAL QUOTES (0-30 Boxes)
+    // 4. PSYCHOLOGICAL QUOTES (The Frustration Curve)
     quotes: [
-        '"Focus is not a gift, but a choice. You just chose against it."',
-        '"The beginning is made. But consistency separates the wheat from the chaff."',
-        '"You are waking up. Now the real mental work begins."',
-        '"Strong performance. Your focus level is significantly above average."',
-        '"Outstanding. You control the system, not the system you."',
-        '"Absolute Elite. You broke the 30-box wall. Respect."'
+        '"Focus is a choice. You just chose against it."',                 // 0-5
+        '"Consistency separates the wheat from the chaff."',              // 6-10
+        '"Waking up. Now the real mental work begins."',                  // 11-15
+        '"Strong performance. You are above average."',                   // 16-20
+        '"Outstanding. You control the system, not the other way around."',// 21-25
+        '"Absolute Elite. You broke the 30-box wall. Respect."'            // 26+
     ],
 
-    // 5. LEGAL DATA
+    // 5. LEGAL DATA (Placeholders)
     legal: {
         name: "YOUR NAME / COMPANY",
         street: "STREET 123",
