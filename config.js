@@ -3,36 +3,40 @@
 // ==========================================
 
 const CLIENT_CONFIG = {
-    // 1. SYSTEM & DATENBANK
-    id: "focus-system-default",     // Eindeutige Firebase-ID (keine Leerzeichen)
-    brandColor: "#b01fa5",          // Deine Markenfarbe (Purpur)
-    easterEggScore: 29,             // Sieg-Grenze (30 Kisten erfolgreich beendet)
+    // 1. SYSTEM & DATABASE
+    id: "unaufhaltsam-master-v1",   // Unique Firebase ID (no spaces)
+    brandColor: "#b01fa5",          // Accent color
+    easterEggScore: 29,             // Victory limit (after 30 boxes)
 
-    // 2. TEXTE (WHITE LABEL)
+    // 2. TEXTS & BRANDING (Only "UNAUFHALTSAM" remains German)
     brandTitle: "UNAUFHALTSAM",
-    brandSub: "FOCUS CHALLENGE V1.0",
-    startDesc: "Fokussiere die Ziel-Kiste. Jeder Fehler beendet das System sofort.",
+    brandSub: "PRECISION CHALLENGE V1.0",
+    startDesc: "Focus on the target box. Any mistake ends the system immediately.",
+    boxOverlayText: "FOCUS",        // Text shown on the target box
     
-    // 3. REWARDS (Platzhalter für Kunden-Angebote)
-    rewardTitle: "ELITE STATUS ERREICHT: DEIN REWARD",
-    rewardSuccess: "REGISTRIERT. DU WIRST KONTAKTIERT.",
-    rewardCode: "UNAUFHALTSAM30",
+    // 3. REWARDS & CODES
+    rewardTitle: "ELITE STATUS REACHED: CLAIM YOUR REWARD",
+    rewardSuccess: "CLAIMED. YOU WILL BE CONTACTED.",
+    rewardCode: "MASTER30",
+    rewardLink: "https://ko-fi.com/eddiesworld", 
 
-    // 4. NEUTRALE MOTIVATIONS-SPRÜCHE (Skala 0-30 Kisten)
+    // 4. PSYCHOLOGICAL QUOTES (0-30 Boxes) - ALL ENGLISH
     quotes: [
-        '"Fokus ist keine Gabe, sondern eine Entscheidung. Du hast dich gerade dagegen entschieden."', // 0-5
-        '"Der Anfang ist gemacht. Aber Konstanz trennt die Spreu vom Weizen."',                     // 6-10
-        '"Du wirst wach. Jetzt fängt die Arbeit im Kopf erst richtig an."',                         // 11-15
-        '"Starke Performance. Dein Fokus-Level liegt deutlich über dem Durchschnitt."',            // 16-20
-        '"Herausragend. Du kontrollierst das System, nicht das System dich."',                     // 21-25
-        '"Absolute Elite. Du hast die 30-Kisten-Wand durchbrochen. Respekt."'                       // 26+
+        '"Focus is not a gift, but a choice. You just chose against it."',
+        '"The beginning is made. But consistency separates the wheat from the chaff."',
+        '"You are waking up. Now the real mental work begins."',
+        '"Strong performance. Your focus level is significantly above average."',
+        '"Outstanding. You control the system, not the other way around."',
+        '"Absolute Elite. You broke the 30-box wall. Respect."'
     ],
 
-    // 5. RECHTLICHES (Platzhalter für Kunden-Daten)
-    impName: "DEIN NAME / FIRMA",
-    impStreet: "STRASSE NR",
-    impCity: "PLZ STADT",
-    impEmail: "MAIL@BEISPIEL.DE",
-    impRegister: "AMTSGERICHT XXX, HRB XXX",
-    impUStId: "DE XXX XXX XXX"
+    // 5. LEGAL (Placeholders)
+    legal: {
+        name: "YOUR NAME / COMPANY",
+        street: "STREET 123",
+        city: "ZIP CITY",
+        email: "MAIL@EXAMPLE.COM",
+        register: "COMMERCIAL REGISTER XXX, HRB XXX",
+        ustid: "VAT ID: DE XXX XXX XXX"
+    }
 };
