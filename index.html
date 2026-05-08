@@ -110,6 +110,10 @@
     const ctx = canvas.getContext("2d");
     const BEST_KEY = "best_" + CONFIG.id;
 
+    // --- BRANDING ASSETS ---
+    const imgWatermark = new Image();
+    imgWatermark.src = "unaufhaltsam_brand.png";
+
     let state = { running: false, score: 0, startTime: 0, totalTime: 0, phase: "idle", phaseStartedAt: 0, boxes: [], correctId: null, selectedId: null, swapsRemaining: 0, activeSwap: null };
 
     function buildRound() {
@@ -152,6 +156,17 @@
 
     function draw() {
       ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      // --- WATERMARK RENDERING (BULLETPROOF) ---
+      if (imgWatermark.complete) {
+        ctx.save();
+        ctx.globalAlpha = 0.25; // Deine gewünschte Deckkraft
+        const w = 450; 
+        const h = (imgWatermark.height / imgWatermark.width) * w;
+        ctx.drawImage(imgWatermark, (canvas.width - w) / 2, (canvas.height - h) / 2 + 40, w, h);
+        ctx.restore();
+      }
+
       state.boxes.forEach(box => {
         ctx.strokeStyle = "#000"; ctx.lineWidth = 3; ctx.strokeRect(box.x, box.y, box.w, box.h);
         if (state.phase === "show" && box.id === state.correctId) { ctx.fillStyle = "#343536"; ctx.fillRect(box.x, box.y, box.w, box.h); }
