@@ -177,7 +177,7 @@
     };
   }
 
-  const CFG = window.CLIENT_CONFIG;
+  const CFG = window.CLIENT_CONFIG || (typeof CLIENT_CONFIG !== 'undefined' ? CLIENT_CONFIG : {});
   const WALL_TARGET = (CFG.easterEggScore || 29) + 1;
   const BEST_KEY = 'focusBest_' + (CFG.id || 'focus-system-master');
   const displayBoxesFromScore = score => Math.min(WALL_TARGET, (Number(score) || 0) + 2);
