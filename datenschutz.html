@@ -1,36 +1,24 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Privacy Policy</title>
-<script src="config.js"></script>
-<style>
-  body { font-family: Arial, sans-serif; line-height: 1.6; padding: 40px; max-width: 860px; margin: auto; color:#000; background:#f5f5f7; }
-  h1 { font-weight:900; border-bottom:2px solid #000; padding-bottom:10px; text-transform:uppercase; }
-  a { color:#000; font-weight:bold; text-decoration:none; font-size:12px; opacity:.65; display:block; margin-top:40px; text-transform:uppercase; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy | UNAUFHALTSAM Engine</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-<h1>Privacy Policy</h1>
-<h2>1. Controller</h2>
-<p>The controller responsible for data processing on this website is:</p>
-<p><strong id="name">YOUR NAME / COMPANY</strong><br><span id="street">STREET 123</span><br><span id="city">ZIP CITY</span><br>Email: <span id="email">MAIL@EXAMPLE.COM</span></p>
-<h2>2. Scores and Leaderboard</h2>
-<p>When users save a name in the leaderboard, the selected name, score, time value and timestamp may be stored. This processing is used to provide the ranking system.</p>
-<h2>3. Firebase / Firestore</h2>
-<p>Google Firebase / Firestore may be used to provide the technical leaderboard infrastructure. Depending on the client implementation, the Firebase project, hosting setup, data location and legal basis must be reviewed and finalized before public deployment.</p>
-<h2>4. Claims and Contact Data</h2>
-<p>If a proof or reward claim is submitted, the entered contact information, score, time value and timestamp may be stored for verification and follow-up.</p>
-<h2>5. Template Notice</h2>
-<p>This file is a technical white-label template and does not replace a legal review. Before public use, operator details, legal basis, service provider information and regional compliance requirements must be checked and finalized.</p>
-<a href="index.html">← Back to system</a>
-<script>
-const l = (window.CLIENT_CONFIG && CLIENT_CONFIG.legal) || {};
-document.getElementById('name').textContent = l.name || 'YOUR NAME / COMPANY';
-document.getElementById('street').textContent = l.street || 'STREET 123';
-document.getElementById('city').textContent = l.city || 'ZIP CITY';
-document.getElementById('email').textContent = l.email || 'MAIL@EXAMPLE.COM';
-</script>
+<body class="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
+  <main class="mx-auto max-w-3xl px-6 py-16">
+    <h1 class="text-3xl font-semibold text-white">Privacy Policy</h1>
+
+    <div class="mt-8 space-y-4 text-zinc-300">
+      <p>This website is hosted on GitHub Pages.</p>
+      <p>Contact is possible via email.</p>
+      <p>No payment data is processed on this website.</p>
+      <p>External CDN resources may be loaded.</p>
+      <p>The live demo may use Firebase for leaderboard functionality.</p>
+    </div>
+
+    <a href="index.html" class="mt-10 inline-block text-sm text-zinc-400 hover:text-white">&larr; Back to Home</a>
+  </main>
 </body>
 </html>

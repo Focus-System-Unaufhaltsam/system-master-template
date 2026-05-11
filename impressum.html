@@ -1,33 +1,22 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Legal Notice</title>
-<script src="config.js"></script>
-<style>
-  body { font-family: Arial, sans-serif; line-height: 1.6; padding: 40px; max-width: 760px; margin: auto; color:#000; background:#f5f5f7; }
-  h1 { font-weight:900; border-bottom:2px solid #000; padding-bottom:10px; text-transform:uppercase; }
-  a { color:#000; font-weight:bold; text-decoration:none; font-size:12px; opacity:.65; display:block; margin-top:40px; text-transform:uppercase; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Legal Notice | UNAUFHALTSAM Engine</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-<h1>Legal Notice</h1>
-<p>Operator information:</p>
-<p><span id="name">YOUR NAME / COMPANY</span><br><span id="street">STREET 123</span><br><span id="city">ZIP CITY</span></p>
-<p><strong>Contact:</strong><br>Email: <span id="email">MAIL@EXAMPLE.COM</span></p>
-<p id="registerBlock" style="display:none;"><strong>Register:</strong><br><span id="register"></span></p>
-<p id="vatBlock" style="display:none;"><strong>VAT ID:</strong><br><span id="vatId"></span></p>
-<p><strong>Template notice:</strong><br>This legal notice is a technical placeholder for white-label deployments. Replace all operator data before public use and verify local legal requirements.</p>
-<a href="index.html">← Back to system</a>
-<script>
-const l = (window.CLIENT_CONFIG && CLIENT_CONFIG.legal) || {};
-document.getElementById('name').textContent = l.name || 'YOUR NAME / COMPANY';
-document.getElementById('street').textContent = l.street || 'STREET 123';
-document.getElementById('city').textContent = l.city || 'ZIP CITY';
-document.getElementById('email').textContent = l.email || 'MAIL@EXAMPLE.COM';
-if (l.register) { document.getElementById('registerBlock').style.display='block'; document.getElementById('register').textContent = l.register; }
-if (l.vatId || l.ustid) { document.getElementById('vatBlock').style.display='block'; document.getElementById('vatId').textContent = l.vatId || l.ustid; }
-</script>
+<body class="min-h-screen bg-zinc-950 text-zinc-100 antialiased">
+  <main class="mx-auto max-w-3xl px-6 py-16">
+    <h1 class="text-3xl font-semibold text-white">Legal Notice</h1>
+    <div class="mt-8 space-y-2 text-zinc-300">
+      <p>YOUR NAME / COMPANY</p>
+      <p>STREET 123</p>
+      <p>ZIP CITY</p>
+      <p>MAIL@EXAMPLE.COM</p>
+    </div>
+
+    <a href="index.html" class="mt-10 inline-block text-sm text-zinc-400 hover:text-white">&larr; Back to Home</a>
+  </main>
 </body>
 </html>
