@@ -2,347 +2,483 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title id="uiPageTitle">UNAUFHALTSAM ENGINE</title>
+  <meta name="description" content="White-label focus challenge system with branded leaderboard, Level 30 wall and Firebase score tracking." />
+  <meta name="theme-color" content="#8b5cf6" />
 
-  <!-- LADE KUNDEN-KONFIGURATION (Optional, falls vorhanden) -->
+  <!-- Client configuration. Duplicate this template and change config.js first. -->
   <script src="config.js"></script>
 
-  <!-- FIREBASE CORE SDKS (Version 9 Compat) -->
+  <!-- Firebase Core SDKs, compat version. -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
   <style>
     :root {
-      --brand-color: #000000; 
+      --brand-color: #8b5cf6;
       --bg: #f5f5f7;
       --white: #fff;
-      --grass: #e7f7e7;
       --shadow: rgba(0,0,0,.08);
       --success: #0f9d58;
       --danger: #d92d20;
+      --muted: #666;
     }
 
-    * { margin:0; padding:0; box-sizing:border-box; font-family: 'Helvetica Neue', Arial, sans-serif; -webkit-tap-highlight-color:transparent; }
-
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Helvetica Neue', Arial, sans-serif; -webkit-tap-highlight-color:transparent; }
+    html { scroll-behavior:smooth; }
     body { background:var(--bg); color:#000; min-height:100vh; padding:20px 14px 40px; overflow-x:hidden; }
 
     .wrap { width:100%; max-width:980px; margin:0 auto; display:flex; flex-direction:column; gap:18px; }
     .topbar { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
-    .title h1 { font-size:clamp(24px, 5vw, 42px); line-height:1; font-weight:900; letter-spacing:-0.8px; text-transform: uppercase;}
+    .title h1 { font-size:clamp(24px,5vw,42px); line-height:1; font-weight:900; letter-spacing:-0.8px; text-transform:uppercase; }
 
-    .btn { appearance:none; border:none; background:#000; color:#fff; padding:16px 22px; border-radius:14px; font-weight:900; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; transition:transform .12s ease; text-transform: uppercase; }
+    .btn { appearance:none; border:none; background:#000; color:#fff; padding:16px 22px; border-radius:14px; font-weight:900; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center; justify-content:center; transition:transform .12s ease, opacity .12s ease; text-transform:uppercase; letter-spacing:.02em; }
     .btn:active { transform:scale(.98); }
-    .btn-brand { background: var(--brand-color); color: #fff; }
+    .btn[disabled] { opacity:.45; cursor:not-allowed; }
+    .btn-brand { background:var(--brand-color); color:#fff; }
     .btn-pulse { animation:pulse 1.5s infinite; }
-    @keyframes pulse { 0%, 100%{ transform:scale(1); } 50%{ transform:scale(1.03); } }
+    @keyframes pulse { 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.03); } }
 
-    /* HUD: Fokus auf Kisten & Best */
-    .hud { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
+    .hud { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
     .stat { border:2px solid #000; border-radius:18px; padding:12px; background:#fff; text-align:center; }
     .stat .label { font-size:10px; opacity:.6; text-transform:uppercase; font-weight:800; margin-bottom:4px; }
-    .stat .value { font-size:clamp(18px, 4vw, 28px); font-weight:900; line-height:1; color: var(--brand-color); }
+    .stat .value { font-size:clamp(18px,4vw,28px); font-weight:900; line-height:1; color:var(--brand-color); }
 
     .game-shell { position:relative; width:100%; background:#fff; border:2px solid #000; border-radius:24px; overflow:hidden; box-shadow:0 10px 30px var(--shadow); }
-    canvas { display:block; width:100%; height:auto; background:radial-gradient(circle, #fff 0%, #eee 100%); touch-action:none; }
+    canvas { display:block; width:100%; height:auto; background:radial-gradient(circle,#fff 0%,#eee 100%); touch-action:none; }
 
-    .overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(52, 53, 54, 0.95); text-align:center; z-index:100; backdrop-filter: blur(5px); color: #fff; }
+    .overlay { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:20px; background:rgba(52,53,54,.95); text-align:center; z-index:100; backdrop-filter:blur(5px); color:#fff; }
     .overlay.hidden { display:none !important; }
 
-    .card { width:min(100%, 480px); background:#fff; border: 2px solid #000; border-top: 5px solid var(--brand-color); border-radius: 4px; padding:30px 20px; color: #000; }
-    .card h2 { font-weight:900; letter-spacing:-0.04em; text-transform: uppercase; margin-bottom: 10px; }
+    .card { width:min(100%,480px); background:#fff; border:2px solid #000; border-top:5px solid var(--brand-color); border-radius:4px; padding:30px 20px; color:#000; }
+    .card h2 { font-weight:900; letter-spacing:-.04em; text-transform:uppercase; margin-bottom:10px; }
+    .small-text { font-size:13px; line-height:1.45; color:var(--muted); }
 
     .leaderboard-container { background:#fff; border:2px solid #000; border-radius:22px; padding:20px; margin-top:10px; }
-    .leaderboard-title { font-weight:900; text-transform:uppercase; margin-bottom:10px; border-bottom:2px solid #000; padding-bottom:5px; font-size: 13px; }
-    .leaderboard-entry { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee; font-weight:700; list-style:none; font-size: 14px; }
+    .leaderboard-title { font-weight:900; text-transform:uppercase; margin-bottom:10px; border-bottom:2px solid #000; padding-bottom:5px; font-size:13px; display:flex; justify-content:space-between; gap:16px; }
+    .leaderboard-entry { display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid #eee; font-weight:700; list-style:none; font-size:14px; }
+    .leaderboard-entry span:last-child { white-space:nowrap; }
+    .empty-state { padding:14px 0; color:#777; font-size:12px; font-weight:800; text-transform:uppercase; }
 
-    #nameInput, #igInput { width: 100%; padding: 15px; margin-bottom: 15px; border: 2px solid #eee; text-align: center; font-weight: 900; outline: none; text-transform: uppercase; font-size: 18px; border-radius: 8px; }
-    #errorMsg { color: var(--danger); font-size: 11px; font-weight: 900; display: none; margin-bottom: 12px; text-transform: uppercase; }
+    #nameInput, #igInput { width:100%; padding:15px; margin-bottom:15px; border:2px solid #eee; text-align:center; font-weight:900; outline:none; text-transform:uppercase; font-size:18px; border-radius:8px; }
+    #errorMsg { color:var(--danger); font-size:11px; font-weight:900; display:none; margin-bottom:12px; text-transform:uppercase; }
 
-    .legal-links { margin-top: 20px; display: flex; justify-content: center; gap: 20px; }
-    .legal-links a { font-size: 10px; color: #aaa; text-decoration: none; font-weight: bold; text-transform: uppercase; }
+    .save-section { display:none; background:#f9f9f9; padding:15px; border-left:5px solid var(--brand-color); text-align:left; margin-bottom:15px; }
+    .save-section p { font-size:11px; font-weight:900; margin-bottom:10px; text-transform:uppercase; color:#333; }
 
-    @media (max-width:720px){ .btn { width:100%; } }
+    .legal-links { margin-top:20px; display:flex; justify-content:center; gap:20px; flex-wrap:wrap; }
+    .legal-links a { font-size:10px; color:#888; text-decoration:none; font-weight:bold; text-transform:uppercase; }
+    .legal-links a:hover { color:#000; }
+
+    @media (max-width:720px){
+      body { padding:14px 10px 30px; }
+      .btn { width:100%; }
+      .topbar .btn { width:auto; }
+      .leaderboard-entry { font-size:12px; }
+      .card { padding:24px 16px; }
+    }
   </style>
 </head>
 <body>
   <main class="wrap">
     <div class="topbar">
       <div class="title"><h1 id="uiBrandTitle">SYSTEM</h1></div>
-      <button class="btn" id="resetBtn" onclick="location.reload()">RESET</button>
+      <button class="btn" id="resetBtn" type="button">RESET</button>
     </div>
 
-    <section class="hud">
+    <section class="hud" aria-label="Score">
       <div class="stat"><div class="label" id="uiBoxesLabel">BOXES</div><div class="value" id="boxValue">2</div></div>
       <div class="stat"><div class="label" id="uiBestLabel">BEST</div><div class="value" id="bestValue">0</div></div>
     </section>
 
-    <section class="game-shell">
+    <section class="game-shell" aria-label="Focus Challenge">
       <canvas id="gameCanvas" width="960" height="540"></canvas>
 
       <div class="overlay" id="startOverlay">
         <div class="card">
           <h2 id="uiBrandSub">SYSTEM V1.0</h2>
-          <p id="uiStartDesc" style="font-size: 14px; color: #666; margin-bottom: 20px;"></p>
-          <button class="btn btn-brand" id="startBtn" style="width:100%;">START SYSTEM</button>
+          <p id="uiStartDesc" class="small-text" style="margin-bottom:20px;"></p>
+          <button class="btn btn-brand" id="startBtn" type="button" style="width:100%;">START SYSTEM</button>
           <div class="legal-links">
-            <a href="impressum.html">Imprint</a>
-            <a href="datenschutz.html">Privacy</a>
+            <a href="impressum.html" id="uiImprintLink">IMPRESSUM</a>
+            <a href="datenschutz.html" id="uiPrivacyLink">DATENSCHUTZ</a>
           </div>
-        </div>
-      </div>
-
-      <div class="overlay hidden" id="nameOverlay">
-        <div class="card">
-          <h2 id="uiNameOverlayTitle">FOCUS CONFIRMED</h2>
-          <p id="uiNameOverlayText" style="font-size: 13px; margin-bottom: 15px;">Secure your place in the global ranking:</p>
-          <div id="errorMsg">NAME VERGEBEN</div>
-          <input type="text" id="nameInput" placeholder="YOUR NAME" maxlength="15" />
-          <button class="btn btn-brand" id="saveScoreBtn" style="width:100%;">SAVE RANK</button>
         </div>
       </div>
 
       <div class="overlay hidden" id="gameOverOverlay">
         <div class="card">
           <h2 id="uiStatusHeader" style="color:var(--danger)">SYSTEM FAILED</h2>
-          <p id="aiText" style="font-size:14px; font-weight:bold; font-style:italic; margin:15px 0; min-height:45px; color:#555; line-height:1.4;"></p>
-          <div id="finalScore" style="font-size:60px; font-weight:900; margin-bottom: 5px;">0 KISTEN</div>
+          <p id="aiText" class="small-text" style="font-weight:bold; font-style:italic; margin:15px 0; min-height:45px;"></p>
+          <div id="finalScore" style="font-size:60px; font-weight:900; margin-bottom:5px;">0 BOXES</div>
           <p id="finalTime" style="font-size:16px; font-weight:900; color:var(--brand-color); margin-bottom:20px;">0.00s</p>
-          
-          <div id="rewardSection" style="display:none; background:#f9f9f9; padding:15px; border-left:5px solid var(--brand-color); text-align: left; margin-bottom: 15px;">
-            <p id="uiRewardTitle" style="font-size:11px; font-weight:900; margin-bottom:10px; text-transform: uppercase;"></p>
-            <input type="text" id="igInput" placeholder="INSTAGRAM / MAIL" />
-            <button class="btn btn-brand" id="claimBtn" style="width:100%;">SUBMIT PROOF</button>
+
+          <div id="saveSection" class="save-section">
+            <p id="uiNameOverlayText">Secure your place in the global ranking:</p>
+            <div id="errorMsg">NAME ALREADY TAKEN</div>
+            <input type="text" id="nameInput" placeholder="YOUR NAME" maxlength="15" />
+            <button class="btn btn-brand" id="saveScoreBtn" type="button" style="width:100%;">SAVE RANK</button>
           </div>
 
-          <button class="btn btn-pulse" id="restartBtn" style="width:100%;">REBOOT SYSTEM</button>
+          <div id="rewardSection" class="save-section">
+            <p id="uiRewardTitle"></p>
+            <input type="text" id="igInput" placeholder="INSTAGRAM / MAIL" />
+            <button class="btn btn-brand" id="claimBtn" type="button" style="width:100%;">SUBMIT PROOF</button>
+          </div>
+
+          <button class="btn btn-pulse" id="restartBtn" type="button" style="width:100%;">REBOOT SYSTEM</button>
         </div>
       </div>
     </section>
 
-    <section class="leaderboard-container">
-      <div style="font-weight:900; margin-bottom:8px; color:var(--danger);" id="uiMyth">30 KISTEN: NIEMAND</div>
-      <div class="leaderboard-title"><span id="uiLeaderboardTitle">Global Wall Ranking</span> <span id="uiLeaderboardTop" style="float:right; opacity:.55;">Top 10</span></div>
-      <div id="leaderboardList"></div>
+    <section class="leaderboard-container" aria-label="Leaderboard">
+      <div style="font-weight:900; margin-bottom:8px; color:var(--danger);" id="uiMyth">LEVEL 30 WALL: NOT FOR TOURISTS</div>
+      <div class="leaderboard-title"><span id="uiLeaderboardTitle">Global Wall Ranking</span><span id="uiLeaderboardTop" style="opacity:.55;">Top 10</span></div>
+      <div id="leaderboardList"><div class="empty-state">Loading ranking...</div></div>
     </section>
   </main>
 
 <script>
-    // --- 0. FALLBACK KONFIGURATION (Falls config.js nicht lädt) ---
-    if (typeof CLIENT_CONFIG === 'undefined') {
+  // --- 0. FALLBACK CONFIGURATION ---
+  if (typeof CLIENT_CONFIG === 'undefined') {
     window.CLIENT_CONFIG = {
-        id: "focus-system-master",
-        brandTitle: "UNAUFHALTSAM",
-        brandSub: "WHITE-LABEL FOCUS CHALLENGE",
-        brandColor: "#8b5cf6",
-        startDesc: "Focus on the target box. Any mistake ends the system immediately.",
-        boxOverlayText: "FOCUS",
-        boxesLabel: "BOXES",
-        bestLabel: "BEST",
-        resetLabel: "RESET",
-        startButton: "START SYSTEM",
-        restartButton: "REBOOT SYSTEM",
-        leaderboardTitle: "Global Wall Ranking",
-        leaderboardTopLabel: "Top 10",
-        wallLabel: "LEVEL 30 WALL: NOT FOR TOURISTS",
-        nameOverlayTitle: "FOCUS CONFIRMED",
-        nameOverlayText: "Secure your place in the global ranking:",
-        namePlaceholder: "YOUR NAME",
-        saveRankButton: "SAVE RANK",
-        statusFail: "SYSTEM FAILED",
-        statusVictory: "THE WALL IS DOWN",
-        rewardTitle: "STATUS EARNED: CLAIM YOUR PROOF",
-        rewardSuccess: "CLAIMED. YOU WILL BE CONTACTED.",
-        claimPlaceholder: "INSTAGRAM / MAIL",
-        claimButton: "SUBMIT PROOF",
-        easterEggScore: 29,
-        minScoreToSave: 1,
-        firebaseConfig: null,
-        quotes: [
-            "Focus broke before the system did.",
-            "The start is easy. Staying locked in is the test.",
-            "You are awake now. The pressure starts here.",
-            "Strong run. Your focus is above casual level.",
-            "Control is visible. The wall is close.",
-            "Wall broken. Status earned."
-        ]
+      id: "focus-system-master",
+      brandTitle: "UNAUFHALTSAM",
+      brandSub: "WHITE-LABEL FOCUS CHALLENGE",
+      brandColor: "#8b5cf6",
+      startDesc: "Focus on the target box. Any mistake ends the system immediately.",
+      boxOverlayText: "FOCUS",
+      boxesLabel: "BOXES",
+      bestLabel: "BEST",
+      resetLabel: "RESET",
+      startButton: "START SYSTEM",
+      restartButton: "REBOOT SYSTEM",
+      leaderboardTitle: "Global Wall Ranking",
+      leaderboardTopLabel: "Top 10",
+      wallLabel: "LEVEL 30 WALL: NOT FOR TOURISTS",
+      nameOverlayTitle: "FOCUS CONFIRMED",
+      nameOverlayText: "Secure your place in the global ranking:",
+      namePlaceholder: "YOUR NAME",
+      saveRankButton: "SAVE RANK",
+      statusFail: "SYSTEM FAILED",
+      statusVictory: "THE WALL IS DOWN",
+      rewardTitle: "STATUS EARNED: CLAIM YOUR PROOF",
+      rewardSuccess: "CLAIMED. YOU WILL BE CONTACTED.",
+      claimPlaceholder: "INSTAGRAM / MAIL",
+      claimButton: "SUBMIT PROOF",
+      imprintLabel: "IMPRESSUM",
+      privacyLabel: "DATENSCHUTZ",
+      emptyLeaderboardText: "No names on the wall yet.",
+      firebaseConfig: null,
+      easterEggScore: 29,
+      minScoreToSave: 1,
+      quotes: [
+        "Focus broke before the system did.",
+        "The start is easy. Staying locked in is the test.",
+        "You are awake now. The pressure starts here.",
+        "Strong run. Your focus is above casual level.",
+        "Control is visible. The wall is close.",
+        "Wall broken. Status earned."
+      ]
     };
-}
+  }
 
-    // --- 1. INITIALISIERUNG AUS CONFIG ---
-    document.documentElement.style.setProperty('--brand-color', CLIENT_CONFIG.brandColor);
-    document.getElementById('uiPageTitle').textContent = CLIENT_CONFIG.brandTitle + " | FOCUS";
-    document.getElementById('uiBrandTitle').textContent = CLIENT_CONFIG.brandTitle;
-    document.getElementById('uiBrandSub').textContent = CLIENT_CONFIG.brandSub;
-    document.getElementById('uiStartDesc').textContent = CLIENT_CONFIG.startDesc;
-    document.getElementById('uiRewardTitle').textContent = CLIENT_CONFIG.rewardTitle;
-    document.getElementById('uiMyth').textContent = CLIENT_CONFIG.wallLabel || ((CLIENT_CONFIG.easterEggScore + 1) + " BOXES: NOBODY");
-    document.getElementById('uiBoxesLabel').textContent = CLIENT_CONFIG.boxesLabel || "BOXES";
-    document.getElementById('uiBestLabel').textContent = CLIENT_CONFIG.bestLabel || "BEST";
-    document.getElementById('resetBtn').textContent = CLIENT_CONFIG.resetLabel || "RESET";
-    document.getElementById('startBtn').textContent = CLIENT_CONFIG.startButton || "START SYSTEM";
-    document.getElementById('restartBtn').textContent = CLIENT_CONFIG.restartButton || "REBOOT SYSTEM";
-    document.getElementById('uiLeaderboardTitle').textContent = CLIENT_CONFIG.leaderboardTitle || "Global Wall Ranking";
-    document.getElementById('uiLeaderboardTop').textContent = CLIENT_CONFIG.leaderboardTopLabel || "Top 10";
-    document.getElementById('uiNameOverlayTitle').textContent = CLIENT_CONFIG.nameOverlayTitle || "FOCUS CONFIRMED";
-    document.getElementById('uiNameOverlayText').textContent = CLIENT_CONFIG.nameOverlayText || "Secure your place in the global ranking:";
-    document.getElementById('nameInput').placeholder = CLIENT_CONFIG.namePlaceholder || "YOUR NAME";
-    document.getElementById('saveScoreBtn').textContent = CLIENT_CONFIG.saveRankButton || "SAVE RANK";
-    document.getElementById('igInput').placeholder = CLIENT_CONFIG.claimPlaceholder || "INSTAGRAM / MAIL";
-    document.getElementById('claimBtn').textContent = CLIENT_CONFIG.claimButton || "SUBMIT PROOF";
+  const CFG = window.CLIENT_CONFIG;
+  const WALL_TARGET = (CFG.easterEggScore || 29) + 1;
+  const displayBoxesFromScore = score => Math.min(WALL_TARGET, (Number(score) || 0) + 2);
 
-    // --- 2. FIREBASE SETUP ---
-    const firebaseConfig = CLIENT_CONFIG.firebaseConfig || { apiKey: "AIzaSyC0olKESyTP0rXUlnjGstLlGN50I1m_O2A", authDomain: "mg-challenge.firebaseapp.com", projectId: "mg-challenge", storageBucket: "mg-challenge.firebasestorage.app", messagingSenderId: "472289048663", appId: "1:472289048663:web:cc68ded6007e1e822c4b12" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore(); const auth = firebase.auth(); const dbRef = db.collection(CLIENT_CONFIG.id);
-    
-    const canvas = document.getElementById("gameCanvas"); const ctx = canvas.getContext("2d");
-    const imgLogo = new Image(); imgLogo.src = "logo.png";
-    const BEST_KEY = "focusBest_" + CLIENT_CONFIG.id;
+  // --- 1. UI INITIALIZATION ---
+  document.documentElement.style.setProperty('--brand-color', CFG.brandColor || '#8b5cf6');
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', CFG.brandColor || '#8b5cf6');
+  document.getElementById('uiPageTitle').textContent = (CFG.brandTitle || 'UNAUFHALTSAM') + ' | FOCUS';
+  document.getElementById('uiBrandTitle').textContent = CFG.brandTitle || 'UNAUFHALTSAM';
+  document.getElementById('uiBrandSub').textContent = CFG.brandSub || 'WHITE-LABEL FOCUS CHALLENGE';
+  document.getElementById('uiStartDesc').textContent = CFG.startDesc || 'Focus on the target box. Any mistake ends the system immediately.';
+  document.getElementById('uiRewardTitle').textContent = CFG.rewardTitle || 'STATUS EARNED: CLAIM YOUR PROOF';
+  document.getElementById('uiMyth').textContent = CFG.wallLabel || ('LEVEL ' + WALL_TARGET + ' WALL: NOT FOR TOURISTS');
+  document.getElementById('uiBoxesLabel').textContent = CFG.boxesLabel || 'BOXES';
+  document.getElementById('uiBestLabel').textContent = CFG.bestLabel || 'BEST';
+  document.getElementById('resetBtn').textContent = CFG.resetLabel || 'RESET';
+  document.getElementById('startBtn').textContent = CFG.startButton || 'START SYSTEM';
+  document.getElementById('restartBtn').textContent = CFG.restartButton || 'REBOOT SYSTEM';
+  document.getElementById('uiLeaderboardTitle').textContent = CFG.leaderboardTitle || 'Global Wall Ranking';
+  document.getElementById('uiLeaderboardTop').textContent = CFG.leaderboardTopLabel || 'Top 10';
+  document.getElementById('uiNameOverlayText').textContent = CFG.nameOverlayText || 'Secure your place in the global ranking:';
+  document.getElementById('nameInput').placeholder = CFG.namePlaceholder || 'YOUR NAME';
+  document.getElementById('saveScoreBtn').textContent = CFG.saveRankButton || 'SAVE RANK';
+  document.getElementById('igInput').placeholder = CFG.claimPlaceholder || 'INSTAGRAM / MAIL';
+  document.getElementById('claimBtn').textContent = CFG.claimButton || 'SUBMIT PROOF';
+  document.getElementById('uiImprintLink').textContent = CFG.imprintLabel || 'IMPRESSUM';
+  document.getElementById('uiPrivacyLink').textContent = CFG.privacyLabel || 'DATENSCHUTZ';
+  document.getElementById('bestValue').textContent = displayBoxesFromScore(Number(localStorage.getItem('focusBest_' + CFG.id) || 0));
 
-    let state = { running:false, score:0, startTime:0, totalTime:0, phase:"idle", phaseStartedAt:0, boxes:[], correctId:null, selectedId:null, swapsRemaining:0, activeSwap:null, cachedLB:[] };
+  // --- 2. FIREBASE SETUP ---
+  const fallbackFirebaseConfig = {
+    apiKey: "AIzaSyC0olKESyTP0rXUlnjGstLlGN50I1m_O2A",
+    authDomain: "mg-challenge.firebaseapp.com",
+    projectId: "mg-challenge",
+    storageBucket: "mg-challenge.firebasestorage.app",
+    messagingSenderId: "472289048663",
+    appId: "1:472289048663:web:cc68ded6007e1e822c4b12"
+  };
+  const firebaseConfig = CFG.firebaseConfig || fallbackFirebaseConfig;
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const auth = firebase.auth();
+  const dbRef = db.collection(CFG.id || 'focus-system-master');
 
-    function getAIQuote(s) { 
-        const i = Math.floor(s / 5); 
-        return CLIENT_CONFIG.quotes[Math.min(i, 5)]; 
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const imgLogo = new Image();
+  imgLogo.src = 'logo.png';
+  const BEST_KEY = 'focusBest_' + (CFG.id || 'focus-system-master');
+
+  let state = { running:false, score:0, startTime:0, totalTime:0, phase:'idle', phaseStartedAt:0, boxes:[], correctId:null, selectedId:null, swapsRemaining:0, activeSwap:null, cachedLB:[] };
+
+  function getAIQuote(score) {
+    const quotes = CFG.quotes || [];
+    if (!quotes.length) return '';
+    const i = Math.floor(score / 5);
+    return quotes[Math.min(i, quotes.length - 1)];
+  }
+
+  // --- 3. ENGINE LOGIC ---
+  function buildRound() {
+    if (state.score >= (CFG.easterEggScore || 29)) { finish(true); return; }
+    state.boxes = [];
+    state.selectedId = null;
+    state.activeSwap = null;
+
+    const count = displayBoxesFromScore(state.score);
+    const cols = Math.ceil(Math.sqrt(count));
+    const rows = Math.ceil(count / cols);
+    const boxW = Math.max(45, Math.min(92, (canvas.width - 160) / cols - 24));
+    const gridW = cols * boxW + (cols - 1) * 24;
+    const gridH = rows * boxW + (rows - 1) * 24;
+    const startX = (canvas.width - gridW) / 2;
+    const startY = 160 + ((canvas.height - 200) - gridH) / 2;
+
+    for (let i = 0; i < count; i++) {
+      state.boxes.push({ id:i, x:startX + (i % cols) * (boxW + 24), y:startY + Math.floor(i / cols) * (boxW + 24), w:boxW, h:boxW, lift:0 });
     }
 
-    // --- 3. ENGINE LOGIK ---
-    function buildRound() {
-        if (state.score >= CLIENT_CONFIG.easterEggScore) { finish(true); return; }
-        state.boxes = []; state.selectedId = null; state.activeSwap = null;
-        const count = Math.min(31, 2 + state.score); const cols = Math.ceil(Math.sqrt(count));
-        const boxW = Math.max(45, Math.min(92, (canvas.width - 160) / cols - 24));
-        const gridW = cols * boxW + (cols - 1) * 24;
-        const startX = (canvas.width - gridW) / 2;
-        const startY = 160 + ((canvas.height - 200) - (Math.ceil(count / cols) * boxW + (Math.ceil(count / cols) - 1) * 24)) / 2;
+    state.correctId = Math.floor(Math.random() * count);
+    state.swapsRemaining = Math.max(4, 3 + Math.floor(count * 1.5));
+    document.getElementById('boxValue').textContent = count;
+    setPhase('show');
+  }
 
-        for (let i = 0; i < count; i++) {
-            state.boxes.push({ id: i, x: startX + (i % cols) * (boxW + 24), y: startY + Math.floor(i / cols) * (boxW + 24), w: boxW, h: boxW, lift: 0 });
+  function startNextSwap() {
+    if (state.swapsRemaining <= 0) { state.activeSwap = null; setPhase('wait'); return; }
+
+    let a, b;
+    if (Math.random() < 0.6) {
+      a = state.boxes.findIndex(box => box.id === state.correctId);
+      b = Math.floor(Math.random() * state.boxes.length);
+      while (b === a) b = Math.floor(Math.random() * state.boxes.length);
+    } else {
+      a = Math.floor(Math.random() * state.boxes.length);
+      b = Math.floor(Math.random() * state.boxes.length);
+      while (b === a) b = Math.floor(Math.random() * state.boxes.length);
+    }
+
+    const bA = state.boxes[a];
+    const bB = state.boxes[b];
+    state.activeSwap = {
+      aId:bA.id, bId:bB.id,
+      aStartX:bA.x, bStartX:bB.x, aStartY:bA.y, bStartY:bB.y,
+      aTargetX:bB.x, bTargetX:bA.x, aTargetY:bB.y, bTargetY:bA.y,
+      start:performance.now(),
+      duration:Math.max(160, (2200 - state.score * 85) / 7.5)
+    };
+    state.swapsRemaining--;
+  }
+
+  function update(ts) {
+    if (!state.running) return;
+
+    if (state.phase === 'show' && ts - state.phaseStartedAt > 1400) {
+      setPhase('shuffle');
+      startNextSwap();
+    } else if (state.phase === 'shuffle') {
+      if (!state.activeSwap) { startNextSwap(); return; }
+      const s = state.activeSwap;
+      const p = Math.min(1, (ts - s.start) / s.duration);
+      const e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      const bA = state.boxes.find(b => b.id === s.aId);
+      const bB = state.boxes.find(b => b.id === s.bId);
+      if (bA && bB) {
+        bA.x = s.aStartX + (s.aTargetX - s.aStartX) * e;
+        bB.x = s.bStartX + (s.bTargetX - s.bStartX) * e;
+        bA.y = s.aStartY + (s.aTargetY - s.aStartY) * e;
+        bB.y = s.bStartY + (s.bTargetY - s.bStartY) * e;
+        if (p >= 1) {
+          bA.x = s.aTargetX; bA.y = s.aTargetY;
+          bB.x = s.bTargetX; bB.y = s.bTargetY;
+          state.activeSwap = null;
         }
-        state.correctId = Math.floor(Math.random() * count);
-        state.swapsRemaining = Math.max(4, 3 + Math.floor(count * 1.5));
-        setPhase("show");
-        document.getElementById("boxValue").textContent = count;
+      }
+    } else if (state.phase === 'wait' && ts - state.phaseStartedAt > 300) {
+      setPhase('pick');
+    } else if (state.phase === 'reveal') {
+      const sel = state.boxes.find(b => b.id === state.selectedId);
+      const cor = state.boxes.find(b => b.id === state.correctId);
+      if (sel) sel.lift = Math.min(sel.h * .8, sel.lift + 5);
+      if (cor && cor.id !== state.selectedId) cor.lift = Math.min(cor.h * .8, cor.lift + 5);
+      if (ts - state.phaseStartedAt > 1200) {
+        if (state.selectedId === state.correctId) { state.score++; buildRound(); }
+        else finish(false);
+      }
     }
 
-    function startNextSwap() {
-        if (state.swapsRemaining <= 0) { state.activeSwap = null; setPhase("wait"); return; }
-        let a, b;
-        if (Math.random() < 0.6) {
-            a = state.boxes.findIndex(box => box.id === state.correctId);
-            b = Math.floor(Math.random() * state.boxes.length);
-            while (b === a) b = Math.floor(Math.random() * state.boxes.length);
-        } else {
-            a = Math.floor(Math.random() * state.boxes.length);
-            b = Math.floor(Math.random() * state.boxes.length);
-            while (b === a) b = Math.floor(Math.random() * state.boxes.length);
-        }
-        const bA = state.boxes[a], bB = state.boxes[b];
-        state.activeSwap = { aId: bA.id, bId: bB.id, aStartX: bA.x, bStartX: bB.x, aStartY: bA.y, bStartY: bB.y, aTargetX: bB.x, bTargetX: bA.x, aTargetY: bB.y, bTargetY: bA.y, start: performance.now(), duration: Math.max(160, (2200 - state.score * 85) / 7.5) };
-        state.swapsRemaining--;
-    }
+    if (state.phase !== 'reveal') state.boxes.forEach(b => b.lift = Math.max(0, b.lift - 6));
+  }
 
-    function update(ts) {
-        if (!state.running) return;
-        if (state.phase === "show" && ts - state.phaseStartedAt > 1400) { setPhase("shuffle"); startNextSwap(); }
-        else if (state.phase === "shuffle") {
-            if (!state.activeSwap) { startNextSwap(); return; }
-            const s = state.activeSwap, p = Math.min(1, (ts - s.start) / s.duration), e = p < 0.5 ? 2*p*p : 1-Math.pow(-2*p+2,2)/2;
-            const bA = state.boxes.find(b => b.id === s.aId), bB = state.boxes.find(b => b.id === s.bId);
-            if(bA && bB) {
-                bA.x = s.aStartX + (s.aTargetX - s.aStartX) * e; bB.x = s.bStartX + (s.bTargetX - s.bStartX) * e;
-                bA.y = s.aStartY + (s.aTargetY - s.aStartY) * e; bB.y = s.bStartY + (s.bTargetY - s.bStartY) * e;
-                if (p >= 1) { bA.x = s.aTargetX; bA.y = s.aTargetY; bB.x = s.bTargetX; bB.y = s.bTargetY; state.activeSwap = null; }
-            }
-        } else if (state.phase === "wait" && ts - state.phaseStartedAt > 300) setPhase("pick");
-        else if (state.phase === "reveal") {
-            const sel = state.boxes.find(b => b.id === state.selectedId), cor = state.boxes.find(b => b.id === state.correctId);
-            if (sel) sel.lift = Math.min(sel.h * 0.8, sel.lift + 5);
-            if (cor && cor.id !== state.selectedId) cor.lift = Math.min(cor.h * 0.8, cor.lift + 5);
-            if (ts - state.phaseStartedAt > 1200) { if (state.selectedId === state.correctId) { state.score++; buildRound(); } else finish(false); }
-        }
-        if (state.phase !== "reveal") state.boxes.forEach(b => b.lift = Math.max(0, b.lift - 6));
-    }
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    state.boxes.forEach(box => {
+      const y = box.y - box.lift;
+      ctx.save();
+      ctx.fillStyle = '#fff';
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 3;
+      ctx.fillRect(box.x, y, box.w, box.h);
+      ctx.strokeRect(box.x, y, box.w, box.h);
 
-    function draw() {
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        state.boxes.forEach(box => {
-            const y = box.y - box.lift; ctx.save(); ctx.fillStyle="#fff"; ctx.strokeStyle="#000"; ctx.lineWidth=3;
-            ctx.strokeRect(box.x,y,box.w,box.h); ctx.fillRect(box.x,y,box.w,box.h);
-            if(imgLogo.complete && imgLogo.width > 0) { const pad = box.w * 0.12; ctx.drawImage(imgLogo, box.x+pad, y+pad, box.w-pad*2, box.h-pad*2); }
-            if(state.phase==="show" && box.id===state.correctId) {
-                ctx.strokeStyle=CLIENT_CONFIG.brandColor; ctx.lineWidth=6; ctx.strokeRect(box.x-4,y-4,box.w+8,box.h+8);
-                ctx.font="900 20px Arial"; ctx.textAlign="center"; ctx.strokeStyle="#000"; ctx.lineWidth=4; const overlayText = CLIENT_CONFIG.boxOverlayText || "FOCUS"; ctx.strokeText(overlayText, box.x+box.w/2, y+box.h/2); ctx.fillStyle="#fff"; ctx.fillText(overlayText, box.x+box.w/2, y+box.h/2);
-            }
-            if(state.phase==="reveal" && box.id===state.correctId) { ctx.fillStyle=CLIENT_CONFIG.brandColor; ctx.font="40px Arial"; ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText("👑", box.x+box.w/2, y+box.h/2); }
-            ctx.restore();
-        });
-    }
+      if (imgLogo.complete && imgLogo.width > 0) {
+        const pad = box.w * .12;
+        ctx.drawImage(imgLogo, box.x + pad, y + pad, box.w - pad * 2, box.h - pad * 2);
+      }
 
-    function finish(victory) {
-        state.running=false; state.totalTime=(performance.now()-state.startTime)/1000;
-        document.getElementById("gameOverOverlay").classList.remove("hidden");
-        document.getElementById("uiStatusHeader").textContent = CLIENT_CONFIG.statusFail || "SYSTEM FAILED";
-        document.getElementById("uiStatusHeader").style.color = "var(--danger)";
-        const finalBoxes = Math.min(31, state.score+2);
-        document.getElementById("finalScore").textContent = finalBoxes + " " + (CLIENT_CONFIG.boxesLabel || "BOXES");
-        document.getElementById("finalTime").textContent = `TIME: ${state.totalTime.toFixed(2)}s`;
-        document.getElementById("aiText").textContent = getAIQuote(state.score);
-        
-        if (victory) {
-            document.getElementById("uiStatusHeader").textContent = CLIENT_CONFIG.statusVictory || "THE WALL IS DOWN";
-            document.getElementById("uiStatusHeader").style.color = "var(--success)";
-        }
+      if (state.phase === 'show' && box.id === state.correctId) {
+        ctx.strokeStyle = CFG.brandColor || '#8b5cf6';
+        ctx.lineWidth = 6;
+        ctx.strokeRect(box.x - 4, y - 4, box.w + 8, box.h + 8);
+        ctx.font = '900 20px Arial';
+        ctx.textAlign = 'center';
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 4;
+        const overlayText = CFG.boxOverlayText || 'FOCUS';
+        ctx.strokeText(overlayText, box.x + box.w / 2, y + box.h / 2);
+        ctx.fillStyle = '#fff';
+        ctx.fillText(overlayText, box.x + box.w / 2, y + box.h / 2);
+      }
 
-        const best = Number(localStorage.getItem(BEST_KEY) || 0); if(state.score > best) localStorage.setItem(BEST_KEY, state.score);
-        document.getElementById("bestValue").textContent = Math.max(best, state.score) + 2;
-        
-        if(finalBoxes >= (CLIENT_CONFIG.easterEggScore + 1) || victory) document.getElementById("rewardSection").style.display="block";
-        if(state.score >= (CLIENT_CONFIG.minScoreToSave || 1)) document.getElementById("nameOverlay").classList.remove("hidden");
-    }
-
-    // --- 4. FIREBASE LOGIK ---
-    auth.onAuthStateChanged(user => {
-        if(user) dbRef.onSnapshot(snap => {
-            const list = document.getElementById("leaderboardList"); list.innerHTML = ""; state.cachedLB = [];
-            snap.forEach(d => state.cachedLB.push({...d.data(), uid:d.id}));
-            state.cachedLB.sort((a,b) => (b.score||0)-(a.score||0) || (a.time||999)-(b.time||999));
-            state.cachedLB.slice(0,10).forEach((d, i) => {
-                const boxes = Math.min(31, (d.score || 0) + 2);
-                list.innerHTML += `<div class="leaderboard-entry"><span><span style="color:var(--brand-color);margin-right:10px;">#${i+1}</span>${d.name}</span><span>${boxes} ${(CLIENT_CONFIG.boxesLabel || "BOXES").toLowerCase()} · ${(d.time||0).toFixed(1)}s</span></div>`;
-            });
-        }, err => console.warn("Firestore listener error (expected if no index):", err));
+      if (state.phase === 'reveal' && box.id === state.correctId) {
+        ctx.fillStyle = CFG.brandColor || '#8b5cf6';
+        ctx.font = '40px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('✓', box.x + box.w / 2, y + box.h / 2);
+      }
+      ctx.restore();
     });
-    auth.signInAnonymously();
+  }
 
-    document.getElementById("startBtn").onclick = () => { state.running=true; state.score=0; state.startTime=performance.now(); document.getElementById("startOverlay").classList.add("hidden"); buildRound(); };
-    document.getElementById("restartBtn").onclick = () => location.reload();
+  function finish(victory) {
+    state.running = false;
+    state.totalTime = (performance.now() - state.startTime) / 1000;
+    const finalBoxes = displayBoxesFromScore(state.score);
 
-    document.getElementById("saveScoreBtn").onclick = async () => {
-        const name = document.getElementById("nameInput").value.trim().toUpperCase(); if(!name) return;
-        const errorEl = document.getElementById("errorMsg");
-        if(state.cachedLB.some(e => e.name===name && e.uid!==auth.currentUser.uid)) { errorEl.style.display="block"; return; }
-        await dbRef.doc(auth.currentUser.uid).set({ name, score:state.score, time:state.totalTime, timestamp:firebase.firestore.FieldValue.serverTimestamp() });
-        location.reload();
-    };
+    document.getElementById('gameOverOverlay').classList.remove('hidden');
+    document.getElementById('uiStatusHeader').textContent = victory ? (CFG.statusVictory || 'THE WALL IS DOWN') : (CFG.statusFail || 'SYSTEM FAILED');
+    document.getElementById('uiStatusHeader').style.color = victory ? 'var(--success)' : 'var(--danger)';
+    document.getElementById('finalScore').textContent = finalBoxes + ' ' + (CFG.boxesLabel || 'BOXES');
+    document.getElementById('finalTime').textContent = 'TIME: ' + state.totalTime.toFixed(2) + 's';
+    document.getElementById('aiText').textContent = getAIQuote(state.score);
 
-    document.getElementById("claimBtn").onclick = async () => {
-        const ig = document.getElementById("igInput").value.trim(); if(!ig) return;
-        await db.collection("claims").add({ brand: CLIENT_CONFIG.brandTitle, ig, score: state.score+2, time: state.totalTime, timestamp: firebase.firestore.FieldValue.serverTimestamp() });
-        document.getElementById("rewardSection").innerHTML = `<p style='font-size:12px; font-weight:900; color:var(--success)'>${CLIENT_CONFIG.rewardSuccess}</p>`;
-    };
+    const best = Number(localStorage.getItem(BEST_KEY) || 0);
+    if (state.score > best) localStorage.setItem(BEST_KEY, state.score);
+    document.getElementById('bestValue').textContent = displayBoxesFromScore(Math.max(best, state.score));
 
-    canvas.onmousedown = e => { 
-        const r = canvas.getBoundingClientRect(); 
-        const x = (e.clientX-r.left)*(canvas.width/r.width), y = (e.clientY-r.top)*(canvas.height/r.height); 
-        if(state.phase==="pick") state.boxes.forEach(b => { if(x>=b.x && x<=b.x+b.w && y>=b.y-b.lift && y <=b.y-b.lift+b.h) { state.selectedId = b.id; setPhase("reveal"); } }); 
-    };
-    
-    function setPhase(p){ state.phase=p; state.phaseStartedAt=performance.now(); }
-    function loop(ts){ update(ts); draw(); requestAnimationFrame(loop); }
-    requestAnimationFrame(loop);
+    if (state.score >= (CFG.minScoreToSave || 1)) document.getElementById('saveSection').style.display = 'block';
+    if (victory || finalBoxes >= WALL_TARGET) document.getElementById('rewardSection').style.display = 'block';
+  }
+
+  // --- 4. FIREBASE LOGIC ---
+  auth.onAuthStateChanged(user => {
+    if (!user) return;
+    dbRef.onSnapshot(snap => {
+      const list = document.getElementById('leaderboardList');
+      list.innerHTML = '';
+      state.cachedLB = [];
+
+      snap.forEach(d => state.cachedLB.push({ ...d.data(), uid:d.id }));
+      state.cachedLB.sort((a,b) => (b.score || 0) - (a.score || 0) || (a.time || 999) - (b.time || 999));
+
+      if (!state.cachedLB.length) {
+        list.innerHTML = '<div class="empty-state">' + (CFG.emptyLeaderboardText || 'No names on the wall yet.') + '</div>';
+        return;
+      }
+
+      state.cachedLB.slice(0,10).forEach((d, i) => {
+        const boxes = displayBoxesFromScore(d.score || 0);
+        const safeName = String(d.name || 'PLAYER').replace(/[<>&"']/g, '');
+        const label = String(CFG.boxesLabel || 'BOXES').toLowerCase();
+        list.innerHTML += '<div class="leaderboard-entry"><span><span style="color:var(--brand-color);margin-right:10px;">#' + (i + 1) + '</span>' + safeName + '</span><span>' + boxes + ' ' + label + ' · ' + (Number(d.time || 0)).toFixed(1) + 's</span></div>';
+      });
+    }, err => {
+      console.warn('Firestore listener error:', err);
+      document.getElementById('leaderboardList').innerHTML = '<div class="empty-state">Leaderboard unavailable.</div>';
+    });
+  });
+  auth.signInAnonymously().catch(err => console.warn('Anonymous auth failed:', err));
+
+  // --- 5. EVENTS ---
+  document.getElementById('resetBtn').onclick = () => location.reload();
+  document.getElementById('startBtn').onclick = () => {
+    state.running = true;
+    state.score = 0;
+    state.startTime = performance.now();
+    document.getElementById('startOverlay').classList.add('hidden');
+    buildRound();
+  };
+  document.getElementById('restartBtn').onclick = () => location.reload();
+
+  document.getElementById('saveScoreBtn').onclick = async () => {
+    const name = document.getElementById('nameInput').value.trim().toUpperCase();
+    if (!name || !auth.currentUser) return;
+    const errorEl = document.getElementById('errorMsg');
+
+    if (state.cachedLB.some(e => e.name === name && e.uid !== auth.currentUser.uid)) {
+      errorEl.style.display = 'block';
+      errorEl.textContent = CFG.nameTakenText || 'NAME ALREADY TAKEN';
+      return;
+    }
+
+    document.getElementById('saveScoreBtn').disabled = true;
+    await dbRef.doc(auth.currentUser.uid).set({ name, score:state.score, time:state.totalTime, timestamp:firebase.firestore.FieldValue.serverTimestamp() });
+    document.getElementById('saveSection').innerHTML = '<p style="color:var(--success); margin:0;">RANK SAVED.</p>';
+  };
+
+  document.getElementById('claimBtn').onclick = async () => {
+    const ig = document.getElementById('igInput').value.trim();
+    if (!ig) return;
+    document.getElementById('claimBtn').disabled = true;
+    await db.collection('claims').add({ brand:CFG.brandTitle, contact:ig, score:displayBoxesFromScore(state.score), time:state.totalTime, timestamp:firebase.firestore.FieldValue.serverTimestamp() });
+    document.getElementById('rewardSection').innerHTML = '<p style="font-size:12px; font-weight:900; color:var(--success); margin:0;">' + (CFG.rewardSuccess || 'CLAIMED. YOU WILL BE CONTACTED.') + '</p>';
+  };
+
+  function handlePick(clientX, clientY) {
+    const r = canvas.getBoundingClientRect();
+    const x = (clientX - r.left) * (canvas.width / r.width);
+    const y = (clientY - r.top) * (canvas.height / r.height);
+    if (state.phase !== 'pick') return;
+    state.boxes.forEach(b => {
+      if (x >= b.x && x <= b.x + b.w && y >= b.y - b.lift && y <= b.y - b.lift + b.h) {
+        state.selectedId = b.id;
+        setPhase('reveal');
+      }
+    });
+  }
+
+  canvas.addEventListener('pointerdown', e => handlePick(e.clientX, e.clientY));
+
+  function setPhase(p) { state.phase = p; state.phaseStartedAt = performance.now(); }
+  function loop(ts) { update(ts); draw(); requestAnimationFrame(loop); }
+  requestAnimationFrame(loop);
 </script>
 </body>
 </html>
