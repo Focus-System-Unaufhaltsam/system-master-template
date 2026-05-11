@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Impressum</title>
+<script src="config.js"></script>
+<style>
+  body { font-family: Arial, sans-serif; line-height: 1.6; padding: 40px; max-width: 760px; margin: auto; color:#000; background:#f5f5f7; }
+  h1 { font-weight:900; border-bottom:2px solid #000; padding-bottom:10px; text-transform:uppercase; }
+  a { color:#000; font-weight:bold; text-decoration:none; font-size:12px; opacity:.65; display:block; margin-top:40px; text-transform:uppercase; }
+</style>
+</head>
+<body>
+<h1>Impressum</h1>
+<p>Angaben gemäß § 5 TMG / § 5 DDG:</p>
+<p><span id="name">YOUR NAME / COMPANY</span><br><span id="street">STREET 123</span><br><span id="city">ZIP CITY</span></p>
+<p><strong>Kontakt:</strong><br>E-Mail: <span id="email">MAIL@EXAMPLE.COM</span></p>
+<p id="registerBlock" style="display:none;"><strong>Register:</strong><br><span id="register"></span></p>
+<p id="ustBlock" style="display:none;"><strong>USt-ID:</strong><br><span id="ustid"></span></p>
+<a href="index.html">← Zurück zum System</a>
+<script>
+const l = (window.CLIENT_CONFIG && CLIENT_CONFIG.legal) || {};
+document.getElementById('name').textContent = l.name || 'YOUR NAME / COMPANY';
+document.getElementById('street').textContent = l.street || 'STREET 123';
+document.getElementById('city').textContent = l.city || 'ZIP CITY';
+document.getElementById('email').textContent = l.email || 'MAIL@EXAMPLE.COM';
+if (l.register) { document.getElementById('registerBlock').style.display='block'; document.getElementById('register').textContent = l.register; }
+if (l.ustid) { document.getElementById('ustBlock').style.display='block'; document.getElementById('ustid').textContent = l.ustid; }
+</script>
+</body>
+</html>
