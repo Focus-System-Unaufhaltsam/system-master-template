@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Datenschutzerklärung</title>
+<title>Privacy Policy</title>
 <script src="config.js"></script>
 <style>
   body { font-family: Arial, sans-serif; line-height: 1.6; padding: 40px; max-width: 860px; margin: auto; color:#000; background:#f5f5f7; }
@@ -12,17 +12,19 @@
 </style>
 </head>
 <body>
-<h1>Datenschutzerklärung</h1>
-<h2>1. Verantwortliche Stelle</h2>
-<p>Die verantwortliche Stelle für die Datenverarbeitung auf dieser Website ist:</p>
-<p><strong id="name">YOUR NAME / COMPANY</strong><br><span id="street">STREET 123</span><br><span id="city">ZIP CITY</span><br>E-Mail: <span id="email">MAIL@EXAMPLE.COM</span></p>
-<h2>2. Spielstände und Leaderboard</h2>
-<p>Wenn Nutzer einen Namen im Leaderboard speichern, werden der gewählte Name, Score, Zeitwert und ein Zeitstempel gespeichert. Die Verarbeitung dient der Bereitstellung der Rangliste.</p>
+<h1>Privacy Policy</h1>
+<h2>1. Controller</h2>
+<p>The controller responsible for data processing on this website is:</p>
+<p><strong id="name">YOUR NAME / COMPANY</strong><br><span id="street">STREET 123</span><br><span id="city">ZIP CITY</span><br>Email: <span id="email">MAIL@EXAMPLE.COM</span></p>
+<h2>2. Scores and Leaderboard</h2>
+<p>When users save a name in the leaderboard, the selected name, score, time value and timestamp may be stored. This processing is used to provide the ranking system.</p>
 <h2>3. Firebase / Firestore</h2>
-<p>Zur technischen Bereitstellung des Leaderboards kann Google Firebase / Firestore eingesetzt werden. Je nach konkreter Kundenimplementierung müssen Firebase-Projekt, Hosting, Datenstandort und Rechtsgrundlage vor Livegang geprüft und in dieser Datenschutzerklärung final angepasst werden.</p>
-<h2>4. Hinweis</h2>
-<p>Diese Datei ist eine technische Vorlage und ersetzt keine rechtliche Prüfung. Vor öffentlicher Nutzung müssen Betreiberangaben, Rechtsgrundlagen und Dienstleisterdaten final geprüft werden.</p>
-<a href="index.html">← Zurück zum System</a>
+<p>Google Firebase / Firestore may be used to provide the technical leaderboard infrastructure. Depending on the client implementation, the Firebase project, hosting setup, data location and legal basis must be reviewed and finalized before public deployment.</p>
+<h2>4. Claims and Contact Data</h2>
+<p>If a proof or reward claim is submitted, the entered contact information, score, time value and timestamp may be stored for verification and follow-up.</p>
+<h2>5. Template Notice</h2>
+<p>This file is a technical white-label template and does not replace a legal review. Before public use, operator details, legal basis, service provider information and regional compliance requirements must be checked and finalized.</p>
+<a href="index.html">← Back to system</a>
 <script>
 const l = (window.CLIENT_CONFIG && CLIENT_CONFIG.legal) || {};
 document.getElementById('name').textContent = l.name || 'YOUR NAME / COMPANY';
