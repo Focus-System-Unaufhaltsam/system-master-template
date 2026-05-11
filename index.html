@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -102,8 +102,8 @@
           <p id="uiStartDesc" class="small-text" style="margin-bottom:20px;"></p>
           <button class="btn btn-brand" id="startBtn" type="button" style="width:100%;">START SYSTEM</button>
           <div class="legal-links">
-            <a href="impressum.html" id="uiImprintLink">IMPRESSUM</a>
-            <a href="datenschutz.html" id="uiPrivacyLink">DATENSCHUTZ</a>
+            <a href="impressum.html" id="uiImprintLink">LEGAL NOTICE</a>
+            <a href="datenschutz.html" id="uiPrivacyLink">PRIVACY POLICY</a>
           </div>
         </div>
       </div>
@@ -168,8 +168,8 @@
       rewardSuccess: "CLAIMED. YOU WILL BE CONTACTED.",
       claimPlaceholder: "INSTAGRAM / MAIL",
       claimButton: "SUBMIT PROOF",
-      imprintLabel: "IMPRESSUM",
-      privacyLabel: "DATENSCHUTZ",
+      imprintLabel: "LEGAL NOTICE",
+      privacyLabel: "PRIVACY POLICY",
       emptyLeaderboardText: "No names on the wall yet.",
       firebaseConfig: null,
       easterEggScore: 29,
@@ -210,8 +210,8 @@
   document.getElementById('saveScoreBtn').textContent = CFG.saveRankButton || 'SAVE RANK';
   document.getElementById('igInput').placeholder = CFG.claimPlaceholder || 'INSTAGRAM / MAIL';
   document.getElementById('claimBtn').textContent = CFG.claimButton || 'SUBMIT PROOF';
-  document.getElementById('uiImprintLink').textContent = CFG.imprintLabel || 'IMPRESSUM';
-  document.getElementById('uiPrivacyLink').textContent = CFG.privacyLabel || 'DATENSCHUTZ';
+  document.getElementById('uiImprintLink').textContent = CFG.imprintLabel || 'LEGAL NOTICE';
+  document.getElementById('uiPrivacyLink').textContent = CFG.privacyLabel || 'PRIVACY POLICY';
   document.getElementById('bestValue').textContent = displayBoxesFromScore(Number(localStorage.getItem('focusBest_' + CFG.id) || 0));
 
   // --- 2. FIREBASE SETUP ---
