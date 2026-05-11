@@ -65,3 +65,5 @@ const CLIENT_CONFIG = {
     vatId: ""
   }
 };
+
+window.CLIENT_CONFIG = CLIENT_CONFIG;
