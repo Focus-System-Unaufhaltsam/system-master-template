@@ -67,3 +67,4 @@ const CLIENT_CONFIG = {
 };
 
 window.CLIENT_CONFIG = CLIENT_CONFIG;
+
