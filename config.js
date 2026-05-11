@@ -34,6 +34,10 @@ const CLIENT_CONFIG = {
   saveRankButton: "SAVE RANK",
   statusFail: "SYSTEM FAILED",
   statusVictory: "THE WALL IS DOWN",
+  imprintLabel: "LEGAL NOTICE",
+  privacyLabel: "PRIVACY POLICY",
+  emptyLeaderboardText: "No names on the wall yet.",
+  nameTakenText: "NAME ALREADY TAKEN",
 
   // 3. REWARDS / CLAIMS
   rewardTitle: "STATUS EARNED: CLAIM YOUR PROOF",
@@ -58,6 +62,6 @@ const CLIENT_CONFIG = {
     city: "ZIP CITY",
     email: "MAIL@EXAMPLE.COM",
     register: "",
-    ustid: ""
+    vatId: ""
   }
 };
