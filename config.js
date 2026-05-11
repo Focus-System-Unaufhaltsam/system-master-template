@@ -6,7 +6,7 @@
 
 const CLIENT_CONFIG = {
   // 1. SYSTEM & DATABASE
-  id: "client-focus-challenge-v1",          // Firestore collection name. No spaces.
+  id: "unaufhaltsam-white-label-demo-v1",  // Firestore collection name. No spaces.
   brandColor: "#8b5cf6",                    // Main brand color.
   easterEggScore: 29,                        // Internal score 29 = 30 boxes reached.
   minScoreToSave: 1,                         // Minimum internal score before rank save is allowed.
